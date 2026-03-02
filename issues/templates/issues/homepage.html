@@ -2,38 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Problem in Uni - Homepage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem in Uni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header>
-        <a href="{% url 'homepage' %}"><button>หน้าแรก (Home)</button></a>
-        
-        <a href="#"><button>โปรไฟล์ (Profile)</button></a>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{% url 'homepage' %}" class="text-2xl font-bold text-blue-600 hover:text-blue-800 transition">
+                ProbleminUni
+            </a>
+            
+            <a href="#" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition">
+                โปรไฟล์ (Profile)
+            </a>
+        </div>
     </header>
 
-    <main>
-        <h1>ProbleminUni</h1>
+    <main class="container mx-auto px-4 py-8">
         
-        <div>
-            <button>Filter ปัญหา</button>
+        <div class="flex justify-between items-end mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">ปัญหาในมหาลัยที่รายงานล่าสุด</h1>
+            
+            <button class="bg-white border border-gray-300 text-gray-600 py-2 px-4 rounded-lg shadow-sm hover:bg-gray-50 flex items-center transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                Filter
+            </button>
         </div>
 
-        <section>
-            <h2>ปัญหาที่มีคนรายงานไว้</h2>
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for issue in issues %}
-                <div style="border: 1px solid black; margin: 10px; padding: 10px;">
-                    <p><strong>ปัญหา:</strong> {{ issue.description }}</p>
-                    <p><strong>สถานที่:</strong> {{ issue.location }}</p>
-                    <p><strong>สถานะ:</strong> {{ issue.get_status_display }}</p>
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full 
+                            {% if issue.status == 'pending' %} bg-yellow-100 text-yellow-700 
+                            {% elif issue.status == 'confirmed' %} bg-blue-100 text-blue-700 
+                            {% else %} bg-green-100 text-green-700 {% endif %}">
+                            {{ issue.get_status_display }}
+                        </span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">{{ issue.description }}</h3>
+                    <p class="text-gray-500 text-sm flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        {{ issue.location }}
+                    </p>
                 </div>
             {% empty %}
-                <p>ยังไม่มีปัญหาที่ถูกรายงาน [cite: 10]</p>
+                <div class="col-span-full text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-gray-400 text-lg">เย้! ตอนนี้ยังไม่มีปัญหาที่ถูกรายงานในมหาลัย</p>
+                </div>
             {% endfor %}
         </section>
         
-        <div style="position: fixed; bottom: 20px; right: 20px;">
-            <a href="#"><button>รายงานปัญหา</button></a>
-        </div>
     </main>
+
+    <button onclick="document.getElementById('reportModal').classList.remove('hidden')" class="fixed bottom-8 right-8 bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-xl transition transform hover:scale-105 flex items-center justify-center">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    </button>
+
+    <div id="reportModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-full max-w-lg p-8 relative">
+            
+            <button onclick="document.getElementById('reportModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <h2 class="text-2xl font-extrabold text-gray-800 mb-6">รายงานปัญหา</h2>
+            
+            <form action="#" method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-5">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="description">ปัญหาที่พบเจอ</label>
+                    <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition" placeholder="เช่น ฝาชักโครกในห้องน้ำชำรุด"></textarea>
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="location">สถานที่</label>
+                    <input type="text" id="location" name="location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition" placeholder="เช่น ตึก 81 ชั้น 4 ห้อง 412">
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="document.getElementById('reportModal').classList.add('hidden')" class="px-5 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 text-white bg-red-500 hover:bg-red-600 rounded-lg font-medium shadow-md transition">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>
