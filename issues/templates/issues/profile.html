@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Problem in Uni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{% url 'homepage' %}" class="text-2xl font-bold text-blue-600 hover:text-blue-800 transition">
+                ProbleminUni
+            </a>
+            <a href="{% url 'profile' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition">
+                โปรไฟล์ (Profile)
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12 max-w-5xl">
+        
+        {% if user.is_authenticated %}
+            <div class="mb-8 flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-800">สวัสดี, {{ user.username }}</h1>
+                <form action="{% url 'logout' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-500 hover:text-red-700 font-medium">ออกจากระบบ (Logout)</button>
+                </form>
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-700 mb-6 border-b pb-2">ปัญหาที่คุณได้รายงานไว้</h2>
+            
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for issue in user_issues %}
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full 
+                                {% if issue.status == 'pending' %} bg-yellow-100 text-yellow-700 
+                                {% elif issue.status == 'confirmed' %} bg-blue-100 text-blue-700 
+                                {% else %} bg-green-100 text-green-700 {% endif %}">
+                                {{ issue.get_status_display }}
+                            </span>
+                            <span class="text-xs text-gray-400">{{ issue.created_at|date:"d M Y" }}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">{{ issue.description }}</h3>
+                        <p class="text-gray-500 text-sm">{{ issue.location }}</p>
+                    </div>
+                {% empty %}
+                    <div class="col-span-full text-center py-8 bg-white rounded-xl shadow-sm border border-gray-100">
+                        <p class="text-gray-500">คุณยังไม่เคยรายงานปัญหาใดๆ</p>
+                    </div>
+                {% endfor %}
+            </section>
+
+        {% else %}
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row">
+                
+                <div class="w-full md:w-1/2 p-10 bg-blue-50 flex flex-col justify-center items-center text-center">
+                    <h2 class="text-2xl font-bold text-blue-800 mb-4">ผู้ใช้ใหม่ใช่ไหม?</h2>
+                    <p class="text-blue-600 mb-8">สมัครสมาชิกเพื่อเริ่มต้นรายงานปัญหาที่คุณพบเจอในมหาวิทยาลัย และติดตามสถานะการแก้ไข</p>
+                    <a href="{% url 'register' %}" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md block text-center mt-4">
+                        สมัครสมาชิก (Register)
+                    </a>
+                </div>
+
+                <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">เข้าสู่ระบบ</h2>
+                    <form action="{% url 'login' %}" method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-gray-700 text-sm font-semibold mb-2">ชื่อผู้ใช้ (Username)</label>
+                            <input type="text" name="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-semibold mb-2">รหัสผ่าน (Password)</label>
+                            <input type="password" name="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-4 rounded-lg transition shadow-md mt-4">
+                            เข้าสู่ระบบ (Login)
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        {% endif %}
+        
+    </main>
+
+</body>
+</html>

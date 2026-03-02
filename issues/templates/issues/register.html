@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>สมัครสมาชิก - Problem in Uni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center font-sans">
+
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-extrabold text-blue-600">สมัครสมาชิก</h2>
+            <p class="text-gray-500 mt-2">เข้าร่วมเป็นส่วนหนึ่งในการแจ้งปัญหา</p>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="flex flex-col">
+                    <label class="font-semibold text-gray-700 text-sm mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <span class="text-xs text-gray-400 mt-1">{{ field.help_text|safe }}</span>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <span class="text-xs text-red-500 mt-1">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md mt-6">
+                ยืนยันการสมัคร
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+            มีบัญชีอยู่แล้ว? <a href="{% url 'profile' %}" class="text-blue-600 font-semibold hover:underline">เข้าสู่ระบบเลย</a>
+        </p>
+    </div>
+
+    <script>
+        let inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.classList.add('w-full', 'px-4', 'py-2', 'border', 'border-gray-300', 'rounded-lg', 'focus:ring-2', 'focus:ring-blue-500', 'focus:outline-none');
+        });
+    </script>
+</body>
+</html>
