@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Problem in Uni - Homepage</title>
+</head>
+<body>
+    <header>
+        <a href="{% url 'homepage' %}"><button>หน้าแรก (Home)</button></a>
+        
+        <a href="#"><button>โปรไฟล์ (Profile)</button></a>
+    </header>
+
+    <main>
+        <h1>ProbleminUni</h1>
+        
+        <div>
+            <button>Filter ปัญหา</button>
+        </div>
+
+        <section>
+            <h2>ปัญหาที่มีคนรายงานไว้</h2>
+            {% for issue in issues %}
+                <div style="border: 1px solid black; margin: 10px; padding: 10px;">
+                    <p><strong>ปัญหา:</strong> {{ issue.description }}</p>
+                    <p><strong>สถานที่:</strong> {{ issue.location }}</p>
+                    <p><strong>สถานะ:</strong> {{ issue.get_status_display }}</p>
+                </div>
+            {% empty %}
+                <p>ยังไม่มีปัญหาที่ถูกรายงาน [cite: 10]</p>
+            {% endfor %}
+        </section>
+        
+        <div style="position: fixed; bottom: 20px; right: 20px;">
+            <a href="#"><button>รายงานปัญหา</button></a>
+        </div>
+    </main>
+</body>
+</html>

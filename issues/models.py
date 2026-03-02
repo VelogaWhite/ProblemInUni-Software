@@ -1,0 +1,26 @@
+from django.db import models
+from django.contrib.auth.models import User
+
+class Issue(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'รอการถูกยืนยัน'),
+        ('confirmed', 'ยืนยันแล้ว'),
+        ('resolved', 'แก้ไขแล้ว'),
+    ]
+
+    # ผู้ที่รายงานปัญหา (สมชาย)
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE) 
+    
+    # รายละเอียดปัญหา 
+    description = models.TextField() 
+    
+    # สถานที่ 
+    location = models.CharField(max_length=255) 
+    
+    # สถานะของปัญหา 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending') 
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.location} - {self.description[:20]}"
