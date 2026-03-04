@@ -1,10 +1,32 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db.models import Q
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from .models import Issue
+from .forms import RegisterForm
 
 def homepage(request):
-    # ดึงข้อมูลปัญหาทั้งหมดมาแสดงที่หน้าแรก (ให้คนอื่นเห็นปัญหาที่ถูกรายงานไว้)
-    issues = Issue.objects.all().order_by('-created_at')
-    return render(request, 'issues/homepage.html', {'issues': issues})
+    # ดึง query parameters สำหรับการกรองข้อมูล
+    status_filter = request.GET.get('status', '')
+    search_query = request.GET.get('search', '')
+
+    # เริ่มต้นด้วย queryset ทั้งหมด
+    issues_query = Issue.objects.all()
+
+    # กรองตามสถานะ (ถ้ามีการเลือก)
+    if status_filter and status_filter != 'all':
+        issues_query = issues_query.filter(status=status_filter)
+
+    # ค้นหาจากหัวข้อปัญหา (description) หรือ สถานที่ (location)
+    if search_query:
+        issues_query = issues_query.filter(
+            Q(description__icontains=search_query) | 
+            Q(location__icontains=search_query)
+        )
+
+    issues = issues_query.order_by('-created_at')
+    return render(request, 'issues/homepage.html', {'issues': issues, 'status_choices': Issue.STATUS_CHOICES})
 
 def profile(request):
     # ตรวจสอบว่าผู้ใช้ล็อกอินหรือยัง
@@ -17,6 +39,28 @@ def profile(request):
         
     return render(request, 'issues/profile.html', {'user_issues': user_issues})
 
+def issue_detail(request, issue_id):
+    issue = get_object_or_404(Issue, pk=issue_id)
+    return render(request, 'issues/issue_detail.html', {'issue': issue})
+
+@login_required(login_url='login')
+def report_issue(request):
+    if request.method == 'POST':
+        description = request.POST.get('description')
+        location = request.POST.get('location')
+        image = request.FILES.get('image')
+        
+        if description and location:
+            Issue.objects.create(
+                description=description,
+                location=location,
+                image=image,
+                reporter=request.user,
+                status='pending'
+            )
+            return redirect('profile')
+    return redirect('homepage')
+
 # ระบบเข้าสู่ระบบ
 def login_view(request):
     if request.method == 'POST':
@@ -28,7 +72,9 @@ def login_view(request):
         user = authenticate(request, username=user_name, password=pass_word)
         if user is not None:
             login(request, user)
-            return redirect('profile') # ล็อกอินสำเร็จให้กลับไปหน้า Profile
+            if user.is_superuser:
+                return redirect('/admin/')
+            return redirect('homepage') # ล็อกอินสำเร็จให้กลับไปหน้า Dashboard
         else:
             messages.error(request, 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!')
             return redirect('profile')
@@ -38,17 +84,17 @@ def login_view(request):
 # ระบบออกจากระบบ
 def logout_view(request):
     logout(request)
-    return redirect('homepage') # ออกจากระบบแล้วเด้งกลับหน้าแรก
+    return redirect('login') # ออกจากระบบแล้วเด้งไปหน้าเข้าสู่ระบบ
 
 # ระบบสมัครสมาชิก
 def register_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user) # สมัครเสร็จให้ล็อกอินอัตโนมัติเลย
             return redirect('profile')
     else:
-        form = UserCreationForm()
+        form = RegisterForm()
         
     return render(request, 'issues/register.html', {'form': form})

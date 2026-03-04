@@ -17,6 +17,9 @@ class Issue(models.Model):
     # สถานที่ 
     location = models.CharField(max_length=255) 
     
+    # รูปภาพประกอบ (ถ้ามี)
+    image = models.ImageField(upload_to='issue_images/', blank=True, null=True)
+
     # สถานะของปัญหา 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending') 
     
