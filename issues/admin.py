@@ -5,7 +5,7 @@ from .models import Issue
 # ปรับแต่งหน้า Admin
 admin.site.site_header = "ProblemInUni Admin"     # ข้อความในแถบ Header
 admin.site.index_title = "การจัดการระบบ"          # ข้อความในหน้าแรกของ Admin
-admin.site.site_url = "/login/"                   # ลิงก์ "View site" จะพากลับไปหน้า Login
+admin.site.site_url = "/"                         # ลิงก์ "View site" จะพากลับไปหน้า Dashboard
 
 # ซ่อนตาราง Groups (กลุ่มผู้ใช้งาน) เนื่องจากไม่ได้ใช้งานในโปรเจกต์นี้
 admin.site.unregister(Group)
