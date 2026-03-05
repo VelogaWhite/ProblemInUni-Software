@@ -64,17 +64,16 @@ def report_issue(request):
 # ระบบเข้าสู่ระบบ
 def login_view(request):
     if request.method == 'POST':
-        # รับค่าจากฟอร์มในหน้า Profile
         user_name = request.POST.get('username')
         pass_word = request.POST.get('password')
         
-        # ตรวจสอบความถูกต้อง
         user = authenticate(request, username=user_name, password=pass_word)
         if user is not None:
             login(request, user)
-            if user.is_superuser:
-                return redirect('/admin/')
-            return redirect('homepage') # ล็อกอินสำเร็จให้กลับไปหน้า Dashboard
+            # ถ้าเป็น Staff ให้วิ่งไปหน้า Staff Dashboard
+            if user.is_staff or user.is_superuser:
+                return redirect('staff_dashboard')
+            return redirect('homepage') 
         else:
             messages.error(request, 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!')
             return redirect('profile')
@@ -98,3 +97,39 @@ def register_view(request):
         form = RegisterForm()
         
     return render(request, 'issues/register.html', {'form': form})
+
+# ==========================================
+# ส่วนของ Staff
+# ==========================================
+@login_required(login_url='login')
+def staff_dashboard(request):
+    # ป้องกันไม่ให้ User ธรรมดาเข้าหน้านี้
+    if not request.user.is_staff and not request.user.is_superuser:
+        return redirect('homepage')
+        
+    issues = Issue.objects.all().order_by('-created_at')
+    return render(request, 'issues/staff_dashboard.html', {
+        'issues': issues,
+        'status_choices': Issue.STATUS_CHOICES
+    })
+
+@login_required(login_url='login')
+def update_issue_status(request, issue_id):
+    if request.method == 'POST' and (request.user.is_staff or request.user.is_superuser):
+        issue = get_object_or_404(Issue, pk=issue_id)
+        new_status = request.POST.get('status')
+        # รับค่าเหตุผลจากฟอร์ม
+        rejection_reason = request.POST.get('rejection_reason', '') 
+        
+        if new_status in dict(Issue.STATUS_CHOICES).keys():
+            issue.status = new_status
+            
+            # ถ้าสถานะเป็น rejected ให้เซฟเหตุผลลงไปด้วย
+            if new_status == 'rejected':
+                issue.rejection_reason = rejection_reason
+            else:
+                issue.rejection_reason = '' # ล้างค่าทิ้งถ้าเปลี่ยนเป็นสถานะอื่น
+                
+            issue.save()
+            
+    return redirect('staff_dashboard')

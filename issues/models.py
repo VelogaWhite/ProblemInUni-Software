@@ -3,9 +3,10 @@ from django.contrib.auth.models import User
 
 class Issue(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'รอการถูกยืนยัน'),
-        ('confirmed', 'ยืนยันแล้ว'),
-        ('resolved', 'แก้ไขแล้ว'),
+        ('pending', 'Pending (รอการตรวจสอบ)'),
+        ('in_progress', 'In Progress (กำลังดำเนินการ)'),
+        ('resolved', 'Resolved (แก้ไขแล้ว)'),
+        ('rejected', 'Rejected (ปฏิเสธ/ยกเลิก)'),
     ]
 
     # ผู้ที่รายงานปัญหา (สมชาย)
@@ -23,6 +24,8 @@ class Issue(models.Model):
     # สถานะของปัญหา 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending') 
     
+    rejection_reason = models.TextField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

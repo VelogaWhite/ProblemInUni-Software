@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Dashboard - Problem in Uni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+    <header class="bg-gray-900 shadow-sm sticky top-0 z-10 text-white">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="{% url 'staff_dashboard' %}" class="text-2xl font-bold text-blue-400">
+                Staff Dashboard
+            </a>
+            <div class="flex items-center gap-4">
+                <span class="font-medium">เจ้าหน้าที่: {{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition text-sm">ออกจากระบบ</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">รายการปัญหาทั้งหมด</h1>
+        
+        <div class="bg-white rounded-xl shadow overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700 text-sm uppercase">
+                        <th class="py-3 px-4">วันที่แจ้ง</th>
+                        <th class="py-3 px-4">ผู้แจ้ง</th>
+                        <th class="py-3 px-4">สถานที่</th>
+                        <th class="py-3 px-4">ปัญหา</th>
+                        <th class="py-3 px-4">สถานะปัจจุบัน</th>
+                        <th class="py-3 px-4 text-center">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    {% for issue in issues %}
+                    <tr class="border-b hover:bg-gray-50 transition">
+                        <td class="py-3 px-4 text-gray-500">{{ issue.created_at|date:"d M Y H:i" }}</td>
+                        <td class="py-3 px-4 font-semibold">{{ issue.reporter.username }}</td>
+                        <td class="py-3 px-4 text-gray-700">{{ issue.location }}</td>
+                        <td class="py-3 px-4 text-gray-700">{{ issue.description|truncatechars:30 }}</td>
+                        <td class="py-3 px-4">
+                            <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if issue.status == 'pending' %} bg-yellow-100 text-yellow-700 
+                                {% elif issue.status == 'in_progress' %} bg-blue-100 text-blue-700 
+                                {% elif issue.status == 'resolved' %} bg-green-100 text-green-700
+                                {% elif issue.status == 'rejected' %} bg-red-100 text-red-700 {% endif %}">
+                                {{ issue.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <form action="{% url 'update_issue_status' issue.id %}" method="POST" class="flex flex-col gap-2 items-end">
+                                {% csrf_token %}
+                                <div class="flex gap-2 w-full justify-end">
+                                    <select name="status" onchange="toggleReasonInput(this, {{ issue.id }})" class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 w-full">
+                                        {% for value, label in status_choices %}
+                                            <option value="{{ value }}" {% if issue.status == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition whitespace-nowrap">
+                                        บันทึก
+                                    </button>
+                                </div>
+                                <input type="text" name="rejection_reason" id="reason_{{ issue.id }}" 
+                                    placeholder="ระบุเหตุผลที่ปฏิเสธ..." 
+                                    value="{{ issue.rejection_reason|default_if_none:'' }}" 
+                                    class="border border-red-300 rounded px-2 py-1 text-sm w-full focus:outline-none focus:border-red-500 {% if issue.status != 'rejected' %}hidden{% endif %}">
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-gray-500">ไม่มีปัญหาในระบบ</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script>
+        function toggleReasonInput(selectElement, issueId) {
+            const reasonInput = document.getElementById('reason_' + issueId);
+            if (selectElement.value === 'rejected') {
+                reasonInput.classList.remove('hidden'); // แสดงช่องกรอก
+                reasonInput.required = true;           // บังคับให้ต้องกรอก
+            } else {
+                reasonInput.classList.add('hidden');    // ซ่อนช่องกรอก
+                reasonInput.required = false;          // ไม่บังคับ
+            }
+        }
+    </script>
+</body>
+</html>
