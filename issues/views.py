@@ -83,8 +83,10 @@ def login_view(request):
 
 # ระบบออกจากระบบ
 def logout_view(request):
-    logout(request)
-    return redirect('login') # ออกจากระบบแล้วเด้งไปหน้าเข้าสู่ระบบ
+    if request.method == 'POST':
+        logout(request)
+        return redirect('login') # ออกจากระบบแล้วเด้งไปหน้าเข้าสู่ระบบ
+    return render(request, 'issues/logout_confirm.html')
 
 # ระบบสมัครสมาชิก
 def register_view(request):

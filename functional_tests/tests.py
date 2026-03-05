@@ -21,8 +21,8 @@ class SomchaiReportsIssueTest(StaticLiveServerTestCase):
         self.browser.find_element(By.NAME, 'password').send_keys('password123')
         self.browser.find_element(By.XPATH, '//button[contains(text(), "เข้าสู่ระบบ")]').click()
 
-        # สมชายเข้าหน้าเว็บ Problem in Uni
-        self.browser.get(self.live_server_url)
+        # รอให้ระบบ Login และ Redirect ไปหน้า Homepage (ไม่ต้องสั่ง get ซ้ำ เพราะจะทำให้ Session หลุด)
+        time.sleep(2)
 
         # 1. ตรวจสอบว่าอยู่หน้า homepage และมีกล่องแสดงปัญหา
         self.assertIn('Problem in Uni', self.browser.title)
@@ -34,7 +34,7 @@ class SomchaiReportsIssueTest(StaticLiveServerTestCase):
         self.assertTrue(filter_button.is_displayed())
 
         # 3. ปุ่มขวาบน กดเพื่อไปดู Profile (อัปเดต: โค้ดใหม่แสดงชื่อ Username เป็นปุ่มกดแทนคำว่า Profile)
-        profile_button = self.browser.find_element(By.LINK_TEXT, 's640101234567')
+        profile_button = self.browser.find_element(By.XPATH, '//a[contains(., "s640101234567")] | //button[contains(., "s640101234567")]')
         self.assertTrue(profile_button.is_displayed())
 
         # 4. ปุ่มซ้ายบนที่จะกดแล้วกลับไปที่หน้า homepage

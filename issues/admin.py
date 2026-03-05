@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from .models import Issue
+from django.utils import timezone
 
 # ปรับแต่งหน้า Admin
 admin.site.site_header = "ProblemInUni Admin"     # ข้อความในแถบ Header
@@ -20,3 +21,21 @@ class IssueAdmin(admin.ModelAdmin):
     search_fields = ('description', 'location', 'reporter__username')
     # ให้แก้ไขสถานะได้เลยจากหน้ารายการ
     list_editable = ('status',)
+
+    def save_model(self, request, obj, form, change):
+        if change and 'status' in form.changed_data:
+            if obj.status == 'confirmed' and not obj.confirmed_at:
+                obj.confirmed_at = timezone.now()
+            elif obj.status == 'resolved' and not obj.resolved_at:
+                obj.resolved_at = timezone.now()
+        super().save_model(request, obj, form, change)
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for obj in instances:
+            if obj.status == 'confirmed' and not obj.confirmed_at:
+                obj.confirmed_at = timezone.now()
+            elif obj.status == 'resolved' and not obj.resolved_at:
+                obj.resolved_at = timezone.now()
+            obj.save()
+        formset.save_m2m()
