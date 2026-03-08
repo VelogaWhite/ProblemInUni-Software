@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import Issue
+from .models import Issue, IssueStatusLog
 from .forms import RegisterForm
 
 def homepage(request):
@@ -41,7 +41,8 @@ def profile(request):
 
 def issue_detail(request, issue_id):
     issue = get_object_or_404(Issue, pk=issue_id)
-    return render(request, 'issues/issue_detail.html', {'issue': issue})
+    logs  = issue.status_logs.all()
+    return render(request, 'issues/issue_detail.html', {'issue': issue, 'logs': logs})
 
 @login_required(login_url='login')
 def report_issue(request):
@@ -51,12 +52,18 @@ def report_issue(request):
         image = request.FILES.get('image')
         
         if description and location:
-            Issue.objects.create(
+            issue = Issue.objects.create(
                 description=description,
                 location=location,
                 image=image,
                 reporter=request.user,
                 status='pending'
+            )
+            IssueStatusLog.objects.create(
+                issue=issue,
+                status='pending',
+                changed_by=request.user,
+                note='รายงานปัญหาเข้าระบบ'
             )
             return redirect('profile')
     return redirect('homepage')
@@ -131,5 +138,13 @@ def update_issue_status(request, issue_id):
                 issue.rejection_reason = '' # ล้างค่าทิ้งถ้าเปลี่ยนเป็นสถานะอื่น
                 
             issue.save()
+
+            # บันทึก log การเปลี่ยนสถานะ
+            IssueStatusLog.objects.create(
+                issue=issue,
+                status=new_status,
+                changed_by=request.user,
+                note=rejection_reason if new_status == 'rejected' else ''
+            )
             
     return redirect('staff_dashboard')
