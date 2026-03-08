@@ -1,140 +1,832 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Problem in Uni</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+    <title>ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <header class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="{% url 'homepage' %}" class="text-2xl font-bold text-blue-600 hover:text-blue-800 transition">
-                ProbleminUni
-            </a>
-            
-            <div class="flex items-center gap-4">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'profile' %}" class="text-gray-700 font-medium hover:text-blue-600 transition">{{ user.username }}</a>
-                    <a href="{% url 'logout' %}" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition">ออกจากระบบ</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">เข้าสู่ระบบ</a>
-                {% endif %}
-            </div>
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --surface-hover: #F0EEE9;
+            --border: #E8E5DF;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --accent-light: #EEF2FD;
+            --danger: #E63B2B;
+            --danger-light: #FEF0EE;
+            --success: #1C9E6B;
+            --success-light: #EAF7F2;
+            --warning: #D4870A;
+            --warning-light: #FEF5E7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(247,246,243,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0 32px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .navbar-brand-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px 6px 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .user-chip:hover { border-color: #ccc; background: var(--surface-hover); }
+
+        .user-avatar {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            height: 38px;
+            padding: 0 16px;
+            border-radius: var(--radius-pill);
+            border: none;
+            cursor: pointer;
+            font-size: 0.84rem;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.15s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+
+        .btn-login {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 8px rgba(43,92,230,0.3);
+        }
+        .btn-login:hover { background: #2250cc; box-shadow: 0 4px 12px rgba(43,92,230,0.4); transform: translateY(-1px); }
+
+        /* MAIN */
+        .main { max-width: 1140px; margin: 0 auto; padding: 44px 32px 80px; }
+
+        /* PAGE HEADER */
+        .page-header { margin-bottom: 32px; animation: fadeUp 0.4s ease both; }
+        .page-header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 5px; }
+        .page-header p { color: var(--text-muted); font-size: 0.875rem; }
+
+        /* TOOLBAR */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.4s 0.05s ease both;
+        }
+
+        .search-wrap { flex: 1; min-width: 220px; position: relative; }
+        .search-icon {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); pointer-events: none; width: 15px; height: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 42px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            background: var(--surface);
+            padding: 0 14px 0 40px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,92,230,0.1); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .btn-search {
+            height: 42px; padding: 0 20px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--accent); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+            box-shadow: 0 2px 8px rgba(43,92,230,0.25);
+        }
+        .btn-search:hover { background: #2250cc; transform: translateY(-1px); }
+
+        /* Filter dropdown */
+        .filter-dropdown { position: relative; }
+
+        .filter-btn {
+            height: 42px; padding: 0 18px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+            box-shadow: var(--shadow-sm);
+            display: flex; align-items: center; gap: 7px;
+            list-style: none;
+            outline: none;
+        }
+        .filter-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+        details[open] .filter-btn { border-color: var(--accent); color: var(--accent); }
+
+        .filter-menu {
+            position: absolute; right: 0; top: calc(100% + 8px);
+            width: 200px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            z-index: 50;
+            animation: dropIn 0.15s ease both;
+        }
+
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .filter-menu a {
+            display: block;
+            padding: 9px 16px;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.1s;
+            font-weight: 500;
+        }
+        .filter-menu a:hover { background: var(--accent-light); color: var(--accent); }
+        .filter-menu a.active { background: var(--accent-light); color: var(--accent); font-weight: 700; }
+
+        .btn-report {
+            height: 42px; padding: 0 20px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--danger); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; gap: 7px;
+            box-shadow: 0 2px 8px rgba(230,59,43,0.25);
+        }
+        .btn-report:hover { background: #c42d1e; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(230,59,43,0.35); }
+
+        /* CARDS GRID */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .issue-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            animation: fadeUp 0.4s ease both;
+            position: relative;
+            height: 100%;
+        }
+
+        /* make all cards same height in grid */
+        .cards-grid > a {
+            display: flex !important;
+            flex-direction: column;
+        }
+
+        .issue-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+        }
+
+        .issue-card.status-pending::before    { background: var(--warning); }
+        .issue-card.status-in_progress::before { background: var(--accent); }
+        .issue-card.status-resolved::before   { background: var(--success); }
+        .issue-card.status-rejected::before   { background: var(--danger); }
+
+        .issue-card:hover { box-shadow: var(--shadow-md); border-color: #D8D4CD; transform: translateY(-2px); }
+
+        .card-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+
+        .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+
+        .card-image { width: 100%; height: 180px; overflow: hidden; background: var(--bg); flex-shrink: 0; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .issue-card:hover .card-image img { transform: scale(1.04); }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: var(--radius-pill);
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.01em;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+        .badge-pending    { background: var(--warning-light); color: var(--warning); }
+        .badge-pending .badge-dot { background: var(--warning); }
+
+        .badge-in_progress { background: var(--accent-light); color: var(--accent); }
+        .badge-in_progress .badge-dot { background: var(--accent); animation: pulseDot 1.5s infinite; }
+
+        .badge-resolved   { background: var(--success-light); color: var(--success); }
+        .badge-resolved .badge-dot { background: var(--success); }
+
+        .badge-rejected   { background: var(--danger-light); color: var(--danger); }
+        .badge-rejected .badge-dot { background: var(--danger); }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.75); }
+        }
+
+        .card-date { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
+
+        .card-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.45;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .rejection-box {
+            background: var(--danger-light);
+            border: 1px solid #fad4d0;
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            flex-shrink: 0;
+        }
+        .rejection-label { font-size: 0.72rem; font-weight: 700; color: var(--danger); margin-bottom: 3px; }
+        .rejection-text  { font-size: 0.82rem; color: #b02d20; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .card-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-top: 12px; border-top: 1px solid var(--border); margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .card-location {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 0.78rem; color: var(--text-muted); font-weight: 500;
+        }
+
+        .card-author {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 0.75rem; color: var(--text-muted);
+        }
+
+        .mini-avatar {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: var(--accent);
+            color: white; font-size: 0.6rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* EMPTY */
+        .empty-state {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 72px 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        .empty-state p { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(15,15,15,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 20px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            width: 100%; max-width: 500px;
+            padding: 36px;
+            position: relative;
+            animation: modalIn 0.25s ease both;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 32px; height: 32px;
+            border-radius: 50%; border: none;
+            background: var(--surface-hover); color: var(--text-secondary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s; font-size: 1.1rem;
+        }
+        .modal-close:hover { background: var(--border); color: var(--text-primary); }
+
+        .modal h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 24px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 0.84rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; }
+        .form-control {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg);
+            outline: none;
+            transition: all 0.2s;
+            resize: none;
+        }
+        .form-control:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(43,92,230,0.08); }
+        .form-control::placeholder { color: var(--text-muted); }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+        .btn-cancel {
+            height: 40px; padding: 0 18px;
+            border-radius: var(--radius-pill); border: 1px solid var(--border);
+            background: transparent; color: var(--text-secondary);
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .btn-cancel:hover { background: var(--surface-hover); }
+
+        .btn-submit {
+            height: 40px; padding: 0 22px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--danger); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+            box-shadow: 0 2px 8px rgba(230,59,43,0.25);
+        }
+        .btn-submit:hover { background: #c42d1e; transform: translateY(-1px); }
+
+        /* VALIDATION */
+        .form-control.error { border-color: var(--danger); background: var(--danger-light); }
+        .field-error {
+            font-size: 0.75rem; color: var(--danger); font-weight: 600;
+            margin-top: 5px; display: none; align-items: center; gap: 4px;
+        }
+        .field-error.show { display: flex; }
+
+        /* LOGIN PROMPT in modal */
+        .login-prompt {
+            text-align: center; padding: 24px 0 8px;
+        }
+        .login-prompt-icon {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--accent-light); margin: 0 auto 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+        }
+        .login-prompt h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+        .login-prompt p { font-size: 0.84rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.55; }
+        .btn-go-login {
+            display: inline-flex; align-items: center; gap: 7px;
+            height: 42px; padding: 0 24px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--accent); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 700;
+            cursor: pointer; text-decoration: none; transition: all 0.15s;
+            box-shadow: 0 2px 8px rgba(43,92,230,0.3);
+        }
+        .btn-go-login:hover { background: #2250cc; transform: translateY(-1px); }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CONFIRM MODAL */
+        .confirm-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(15,15,15,0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .confirm-overlay.open { display: flex; }
+
+        .confirm-box {
+            background: var(--surface);
+            border-radius: 18px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            width: 100%; max-width: 380px;
+            padding: 32px 28px 24px;
+            text-align: center;
+            animation: modalIn 0.2s ease both;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.94) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .confirm-icon {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 1.4rem;
+        }
+        .confirm-icon.warn  { background: var(--danger-light); }
+        .confirm-icon.info  { background: var(--accent-light); }
+
+        .confirm-title {
+            font-size: 1.05rem; font-weight: 700;
+            letter-spacing: -0.015em; margin-bottom: 8px;
+        }
+        .confirm-desc {
+            font-size: 0.84rem; color: var(--text-muted);
+            line-height: 1.6; margin-bottom: 24px;
+        }
+        .confirm-actions {
+            display: flex; gap: 10px;
+        }
+        .confirm-btn {
+            flex: 1; height: 42px;
+            border-radius: var(--radius-pill); border: none;
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .confirm-btn.cancel {
+            background: var(--bg); color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .confirm-btn.cancel:hover { background: var(--surface-hover); }
+        .confirm-btn.danger {
+            background: var(--danger); color: white;
+            box-shadow: 0 2px 8px rgba(230,59,43,0.25);
+        }
+        .confirm-btn.danger:hover { background: #c42d1e; transform: translateY(-1px); }
+        .confirm-btn.primary {
+            background: var(--accent); color: white;
+            box-shadow: 0 2px 8px rgba(43,92,230,0.25);
+        }
+        .confirm-btn.primary:hover { background: #2250cc; transform: translateY(-1px); }
+        .issue-card:nth-child(1) { animation-delay: 0.10s; }
+        .issue-card:nth-child(2) { animation-delay: 0.16s; }
+        .issue-card:nth-child(3) { animation-delay: 0.22s; }
+        .issue-card:nth-child(4) { animation-delay: 0.28s; }
+        .issue-card:nth-child(5) { animation-delay: 0.34s; }
+        .issue-card:nth-child(6) { animation-delay: 0.40s; }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="{% url 'homepage' %}" class="navbar-brand">
+            <span class="navbar-brand-dot"></span>
+            ProbleminUni
+        </a>
+        <div class="navbar-right">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="user-chip">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>
+                    {{ user.username }}
+                </a>
+                <button onclick="openConfirm('logout')" class="btn btn-logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    ออกจากระบบ
+                </button>
+                <a id="logout-link" href="{% url 'logout' %}" style="display:none;"></a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-login">เข้าสู่ระบบ</a>
+            {% endif %}
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8">
-        
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <h1 class="text-2xl font-bold text-gray-800">ปัญหาในมหาลัยที่รายงานล่าสุด</h1>
-            
-            <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                <form method="GET" action="{% url 'homepage' %}" class="flex gap-2">
-                    <!-- เก็บค่า status ไว้ใน hidden input เพื่อให้ตอนกดค้นหา ค่า filter ไม่หาย -->
-                    <input type="hidden" name="status" value="{{ request.GET.status }}">
-                    
-                    <input type="text" name="search" placeholder="ค้นหาปัญหา หรือ สถานที่..." value="{{ request.GET.search }}" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full md:w-80 lg:w-96">
-                    
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">ค้นหา</button>
-                </form>
+    <main class="main">
 
-                <!-- ปุ่ม Filter แบบ Dropdown -->
-                <details class="relative inline-block text-left">
-                    <summary class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition flex items-center text-sm font-medium list-none">
-                        <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-                        Filter
-                    </summary>
-                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-20 overflow-hidden">
-                        <a href="{% querystring status='' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {% if not request.GET.status %}bg-blue-50 text-blue-600 font-semibold{% endif %}">ทั้งหมด</a>
-                        {% for value, label in status_choices %}
-                        <a href="{% querystring status=value %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 {% if request.GET.status == value %}bg-blue-50 text-blue-600 font-semibold{% endif %}">{{ label }}</a>
-                        {% endfor %}
-                    </div>
-                </details>
-
-                <button onclick="document.getElementById('reportModal').classList.remove('hidden')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center justify-center whitespace-nowrap text-sm font-medium">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    แจ้งปัญหา
-                </button>
-            </div>
+        <div class="page-header">
+            <h1>ปัญหาในมหาลัยที่รายงานล่าสุด</h1>
+            <p>ติดตามและจัดการปัญหาทั้งหมดภายในมหาวิทยาลัย</p>
         </div>
 
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for issue in issues %}
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full 
-                            {% if issue.status == 'pending' %} bg-yellow-100 text-yellow-700 
-                            {% elif issue.status == 'in_progress' %} bg-blue-100 text-blue-700 
-                            {% elif issue.status == 'resolved' %} bg-green-100 text-green-700 
-                            {% elif issue.status == 'rejected' %} bg-red-100 text-red-700 {% endif %}">
-                            {{ issue.get_status_display }}
-                        </span>
-                        <span class="text-xs text-gray-400">{{ issue.created_at|date:"d M Y" }}</span>
-                    </div>
-                    
-                    {% if issue.image %}
-                    <div class="mb-4 h-48 overflow-hidden rounded-lg bg-gray-100">
-                        <img src="{{ issue.image.url }}" alt="รูปปัญหา" class="w-full h-full object-cover hover:scale-105 transition duration-300">
-                    </div>
-                    {% endif %}
+        <div class="toolbar">
+            <form method="GET" action="{% url 'homepage' %}" style="display:flex;gap:8px;flex:1;min-width:220px;">
+                <input type="hidden" name="status" value="{{ request.GET.status }}">
+                <div class="search-wrap">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" name="search" class="search-input" placeholder="ค้นหาปัญหา หรือ สถานที่..." value="{{ request.GET.search }}">
+                </div>
+                <button type="submit" class="btn-search">ค้นหา</button>
+            </form>
 
-                    <h3 class="text-lg font-bold text-gray-800 mb-2 line-clamp-2">{{ issue.description }}</h3>
-                    {% if issue.status == 'rejected' and issue.rejection_reason %}
-                    <div class="mt-3 mb-2 p-3 bg-red-50 rounded-lg border border-red-100">
-                        <p class="text-xs text-red-600 font-semibold mb-1">เหตุผลที่ปฏิเสธ:</p>
-                        <p class="text-sm text-red-800">{{ issue.rejection_reason }}</p>
+            <details class="filter-dropdown">
+                <summary class="filter-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    ตัวกรอง
+                </summary>
+                <div class="filter-menu">
+                    <a href="{% querystring status='' %}" class="{% if not request.GET.status %}active{% endif %}">ทั้งหมด</a>
+                    {% for value, label in status_choices %}
+                    <a href="{% querystring status=value %}" class="{% if request.GET.status == value %}active{% endif %}">{{ label }}</a>
+                    {% endfor %}
+                </div>
+            </details>
+
+            <button onclick="openConfirm('report')" class="btn-report">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                แจ้งปัญหา
+            </button>
+        </div>
+
+        <section class="cards-grid">
+            {% for issue in issues %}
+                <a href="{% url 'issue_detail' issue.id %}" style="text-decoration:none;color:inherit;display:block;">
+                <div class="issue-card status-{{ issue.status }}" style="cursor:pointer;">
+                    {% if issue.image %}
+                    <div class="card-image">
+                        <img src="{{ issue.image.url }}" alt="รูปปัญหา">
                     </div>
                     {% endif %}
-                    
-                    <div class="flex justify-between items-end mt-4 pt-3 border-t border-gray-100">
-                        <p class="text-gray-500 text-sm flex items-center">
-                            <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            {{ issue.location }}
-                        </p>
-                        <span class="text-xs text-gray-400">แจ้งโดย {{ issue.reporter.username }}</span>
+                    <div class="card-body">
+                        <div class="card-top">
+                            <span class="badge badge-{{ issue.status }}">
+                                <span class="badge-dot"></span>
+                                {{ issue.get_status_display }}
+                            </span>
+                            <span class="card-date">{{ issue.created_at|date:"d M Y" }}</span>
+                        </div>
+
+                        <h3 class="card-title">{{ issue.description }}</h3>
+
+                        {% if issue.status == 'rejected' and issue.rejection_reason %}
+                        <div class="rejection-box">
+                            <p class="rejection-label">เหตุผลที่ปฏิเสธ</p>
+                            <p class="rejection-text">{{ issue.rejection_reason }}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="card-footer">
+                            <div class="card-location">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {{ issue.location }}
+                            </div>
+                            <div class="card-author">
+                                <div class="mini-avatar">{{ issue.reporter.username|first|upper }}</div>
+                                {{ issue.reporter.username }}
+                            </div>
+                        </div>
                     </div>
                 </div>
+                </a>
             {% empty %}
-                <div class="col-span-full text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <p class="text-gray-400 text-lg">ตอนนี้ยังไม่มีปัญหาที่ถูกรายงานในมหาลัย</p>
+                <div class="empty-state">
+                    <p>ตอนนี้ยังไม่มีปัญหาที่ถูกรายงานในมหาลัย</p>
                 </div>
             {% endfor %}
         </section>
-        
+
     </main>
 
-    <div id="reportModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-full max-w-lg p-8 relative">
-            
-            <button onclick="document.getElementById('reportModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+    <!-- REPORT MODAL -->
+    <div id="reportModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="modal">
+            <button class="modal-close" onclick="document.getElementById('reportModal').classList.remove('open')">✕</button>
 
-            <h2 class="text-2xl font-extrabold text-gray-800 mb-6">รายงานปัญหา</h2>
-            
-            <form action="{% url 'report_issue' %}" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                
-                <div class="mb-5">
-                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="description">ปัญหาที่พบเจอ</label>
-                    <textarea id="description" name="description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition" placeholder="เช่น ฝาชักโครกในห้องน้ำชำรุด"></textarea>
+            {% if user.is_authenticated %}
+                <h2>รายงานปัญหา</h2>
+                <form id="reportForm" action="{% url 'report_issue' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="description">ปัญหาที่พบเจอ <span style="color:var(--danger)">*</span></label>
+                        <textarea id="description" name="description" rows="3" class="form-control" placeholder="เช่น ฝาชักโครกในห้องน้ำชำรุด"></textarea>
+                        <div class="field-error" id="err-description">⚠ กรุณาระบุรายละเอียดปัญหา</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="location">สถานที่ <span style="color:var(--danger)">*</span></label>
+                        <input type="text" id="location" name="location" class="form-control" placeholder="เช่น ตึก 81 ชั้น 4 ห้อง 412">
+                        <div class="field-error" id="err-location">⚠ กรุณาระบุสถานที่เกิดเหตุ</div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="document.getElementById('reportModal').classList.remove('open')">ยกเลิก</button>
+                        <button type="button" onclick="validateAndConfirm()" class="btn-submit">ส่งรายงาน</button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="login-prompt">
+                    <div class="login-prompt-icon">🔒</div>
+                    <h3>กรุณาเข้าสู่ระบบก่อน</h3>
+                    <p>คุณต้องเข้าสู่ระบบด้วยบัญชีมหาวิทยาลัยก่อน<br>จึงจะสามารถแจ้งปัญหาได้</p>
+                    <a href="{% url 'profile' %}" class="btn-go-login">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                        เข้าสู่ระบบ
+                    </a>
                 </div>
-                
-                <div class="mb-8">
-                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="location">สถานที่</label>
-                    <input type="text" id="location" name="location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition" placeholder="เช่น ตึก 81 ชั้น 4 ห้อง 412">
-                </div>
-                
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="document.getElementById('reportModal').classList.add('hidden')" class="px-5 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition">ยกเลิก</button>
-                    <button type="submit" class="px-5 py-2 text-white bg-red-500 hover:bg-red-600 rounded-lg font-medium shadow-md transition">Submit</button>
-                </div>
-            </form>
+            {% endif %}
         </div>
     </div>
+
+
+    <!-- CONFIRM MODAL -->
+    <div id="confirmModal" class="confirm-overlay" onclick="if(event.target===this) closeConfirm()">
+        <div class="confirm-box">
+            <div class="confirm-icon warn" id="confirm-icon">⚠️</div>
+            <div class="confirm-title" id="confirm-title">ยืนยันการดำเนินการ</div>
+            <div class="confirm-desc" id="confirm-desc">คุณแน่ใจหรือไม่?</div>
+            <div class="confirm-actions">
+                <button class="confirm-btn cancel" onclick="closeConfirm()">ยกเลิก</button>
+                <button class="confirm-btn danger" id="confirm-ok-btn" onclick="confirmAction()">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let _confirmType = null;
+        let _reportFormEl = null;
+
+        const confirmConfigs = {
+            logout: {
+                icon: '👋',
+                iconClass: 'warn',
+                title: 'ออกจากระบบ?',
+                desc: 'คุณต้องการออกจากระบบใช่ไหม? จะต้องเข้าสู่ระบบใหม่อีกครั้ง',
+                okText: 'ออกจากระบบ',
+                okClass: 'danger'
+            },
+            report: {
+                icon: '📋',
+                iconClass: 'info',
+                title: 'แจ้งปัญหาใหม่?',
+                desc: 'คุณต้องการเปิดฟอร์มเพื่อแจ้งปัญหาใหม่ใช่ไหม?',
+                okText: 'เปิดฟอร์ม',
+                okClass: 'primary'
+            },
+            submit: {
+                icon: '📤',
+                iconClass: 'info',
+                title: 'ส่งรายงานปัญหา?',
+                desc: 'ตรวจสอบข้อมูลให้ถูกต้องก่อนส่ง จะไม่สามารถแก้ไขได้หลังจากส่งแล้ว',
+                okText: 'ส่งรายงาน',
+                okClass: 'primary'
+            }
+        };
+
+        function validateAndConfirm() {
+            const desc = document.getElementById('description');
+            const loc  = document.getElementById('location');
+            const errDesc = document.getElementById('err-description');
+            const errLoc  = document.getElementById('err-location');
+            let valid = true;
+
+            // reset
+            desc.classList.remove('error');
+            loc.classList.remove('error');
+            errDesc.classList.remove('show');
+            errLoc.classList.remove('show');
+
+            if (!desc.value.trim()) {
+                desc.classList.add('error');
+                errDesc.classList.add('show');
+                valid = false;
+            }
+            if (!loc.value.trim()) {
+                loc.classList.add('error');
+                errLoc.classList.add('show');
+                valid = false;
+            }
+
+            if (valid) openConfirm('submit');
+        }
+
+        // clear error on input
+        document.addEventListener('DOMContentLoaded', function() {
+            ['description','location'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', function() {
+                    this.classList.remove('error');
+                    const err = document.getElementById('err-' + id);
+                    if (err) err.classList.remove('show');
+                });
+            });
+        });
+
+        function openConfirm(type, formEl) {
+            _confirmType = type;
+            _reportFormEl = formEl || null;
+            const cfg = confirmConfigs[type];
+            document.getElementById('confirm-icon').textContent = cfg.icon;
+            document.getElementById('confirm-icon').className = 'confirm-icon ' + cfg.iconClass;
+            document.getElementById('confirm-title').textContent = cfg.title;
+            document.getElementById('confirm-desc').textContent = cfg.desc;
+            const okBtn = document.getElementById('confirm-ok-btn');
+            okBtn.textContent = cfg.okText;
+            okBtn.className = 'confirm-btn ' + cfg.okClass;
+            document.getElementById('confirmModal').classList.add('open');
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirmModal').classList.remove('open');
+            _confirmType = null;
+        }
+
+        function confirmAction() {
+            if (_confirmType === 'logout') {
+                document.getElementById('logout-link').click();
+            } else if (_confirmType === 'report') {
+                closeConfirm();
+                document.getElementById('reportModal').classList.add('open');
+            } else if (_confirmType === 'submit') {
+                closeConfirm();
+                document.getElementById('reportForm').submit();
+            }
+        }
+    </script>
 
 </body>
 </html>

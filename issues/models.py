@@ -30,3 +30,16 @@ class Issue(models.Model):
 
     def __str__(self):
         return f"{self.location} - {self.description[:20]}"
+
+class IssueStatusLog(models.Model):
+    issue      = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='status_logs')
+    status     = models.CharField(max_length=20, choices=Issue.STATUS_CHOICES)
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    note       = models.TextField(blank=True, null=True)  # เก็บ rejection_reason ด้วย
+
+    class Meta:
+        ordering = ['changed_at']
+
+    def __str__(self):
+        return f"{self.issue} → {self.status} at {self.changed_at:%d/%m/%Y %H:%M}"
