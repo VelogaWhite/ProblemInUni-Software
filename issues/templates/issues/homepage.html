@@ -150,6 +150,8 @@
             margin-bottom: 24px;
             flex-wrap: wrap;
             animation: fadeUp 0.4s 0.05s ease both;
+            position: relative;
+            z-index: 10;
         }
 
         .search-wrap { flex: 1; min-width: 220px; position: relative; }
@@ -186,7 +188,7 @@
         .btn-search:hover { background: #2250cc; transform: translateY(-1px); }
 
         /* Filter dropdown */
-        .filter-dropdown { position: relative; }
+        .filter-dropdown { position: relative; z-index: 10; }
 
         .filter-btn {
             height: 42px; padding: 0 18px;
@@ -203,9 +205,10 @@
         }
         .filter-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
 
-        details[open] .filter-btn { border-color: var(--accent); color: var(--accent); }
+        .filter-btn.active { border-color: var(--accent); color: var(--accent); }
 
         .filter-menu {
+            display: none;
             position: absolute; right: 0; top: calc(100% + 8px);
             width: 200px;
             background: var(--surface);
@@ -214,8 +217,8 @@
             box-shadow: var(--shadow-md);
             overflow: hidden;
             z-index: 50;
-            animation: dropIn 0.15s ease both;
         }
+        .filter-menu.open { display: block; animation: dropIn 0.15s ease both; }
 
         @keyframes dropIn {
             from { opacity: 0; transform: translateY(-6px); }
@@ -265,6 +268,7 @@
             animation: fadeUp 0.4s ease both;
             position: relative;
             height: 100%;
+            isolation: isolate;
         }
 
         /* make all cards same height in grid */
@@ -578,6 +582,7 @@
                     <div class="user-avatar">{{ user.username|first|upper }}</div>
                     {{ user.username }}
                 </a>
+                
                 <button onclick="openConfirm('logout')" class="btn btn-logout">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     ออกจากระบบ
@@ -606,18 +611,18 @@
                 <button type="submit" class="btn-search">ค้นหา</button>
             </form>
 
-            <details class="filter-dropdown">
-                <summary class="filter-btn">
+            <div class="filter-dropdown">
+                <button type="button" class="filter-btn" id="filterBtn" onclick="toggleFilter(event)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                     ตัวกรอง
-                </summary>
-                <div class="filter-menu">
+                </button>
+                <div class="filter-menu" id="filterMenu">
                     <a href="{% querystring status='' %}" class="{% if not request.GET.status %}active{% endif %}">ทั้งหมด</a>
                     {% for value, label in status_choices %}
                     <a href="{% querystring status=value %}" class="{% if request.GET.status == value %}active{% endif %}">{{ label }}</a>
                     {% endfor %}
                 </div>
-            </details>
+            </div>
 
             <button onclick="openConfirm('report')" class="btn-report">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -814,6 +819,21 @@
             document.getElementById('confirmModal').classList.remove('open');
             _confirmType = null;
         }
+
+        function toggleFilter(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('filterMenu');
+            const btn = document.getElementById('filterBtn');
+            const isOpen = menu.classList.contains('open');
+            menu.classList.toggle('open', !isOpen);
+            btn.classList.toggle('active', !isOpen);
+        }
+        document.addEventListener('click', function() {
+            const menu = document.getElementById('filterMenu');
+            const btn = document.getElementById('filterBtn');
+            if (menu) menu.classList.remove('open');
+            if (btn) btn.classList.remove('active');
+        });
 
         function confirmAction() {
             if (_confirmType === 'logout') {

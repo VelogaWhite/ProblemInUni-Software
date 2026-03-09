@@ -313,6 +313,7 @@
                     <div class="user-avatar">{{ user.username|first|upper }}</div>
                     {{ user.username }}
                 </a>
+                
                 <button onclick="openLogoutConfirm()" class="btn btn-logout">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     ออกจากระบบ
@@ -382,7 +383,7 @@
                 {% endcomment %}
 
                 {% comment %}
-                  Step 1: pending — ใช้ issue.created_at เสมอ (มีข้อมูลแน่นอน)
+                  Step 1: pending — ใช้ issue.created_at เสมอ ไม่ต้องรอ log
                 {% endcomment %}
                 <div class="timeline-item">
                     <div class="tl-dot pending">
@@ -400,7 +401,9 @@
                     </div>
                 </div>
 
-                {% comment %} Step 2+: ดึงจาก logs (ข้าม pending อันแรก ถ้ามี) {% endcomment %}
+                {% comment %}
+                  Step 2+: แสดง log จริง (ข้าม pending) แล้วต่อด้วย future steps ตาม status
+                {% endcomment %}
                 {% for log in logs %}
                     {% if log.status != 'pending' %}
                     <div class="timeline-item">
@@ -432,7 +435,7 @@
                     {% endif %}
                 {% endfor %}
 
-                {% comment %} Future steps — แสดงเฉพาะถ้าไม่ใช่ resolved/rejected {% endcomment %}
+                {% comment %} Future steps — เสมอ 3 step ยกเว้น rejected {% endcomment %}
                 {% if issue.status == 'pending' %}
                     <div class="timeline-item">
                         <div class="tl-dot future">
