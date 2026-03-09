@@ -95,6 +95,8 @@
         }
 
         .stat-card {
+            text-decoration: none;
+            cursor: pointer;
             background: var(--surface); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 16px 20px;
             box-shadow: var(--shadow-sm);
@@ -288,26 +290,26 @@
 
         <!-- STATS -->
         <div class="stats-row">
-            <div class="stat-card">
+            <a class="stat-card {% if not request.GET.status_filter %}stat-active{% endif %}" href="?">
                 <div class="stat-label">ทั้งหมด</div>
                 <div class="stat-value blue">{{ count_total }}</div>
-            </div>
-            <div class="stat-card">
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'pending' %}stat-active{% endif %}" href="?status_filter=pending">
                 <div class="stat-label">รอดำเนินการ</div>
                 <div class="stat-value orange">{{ count_pending }}</div>
-            </div>
-            <div class="stat-card">
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'in_progress' %}stat-active{% endif %}" href="?status_filter=in_progress">
                 <div class="stat-label">กำลังดำเนินการ</div>
                 <div class="stat-value blue">{{ count_in_progress }}</div>
-            </div>
-            <div class="stat-card">
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'resolved' %}stat-active{% endif %}" href="?status_filter=resolved">
                 <div class="stat-label">แก้ไขแล้ว</div>
                 <div class="stat-value green">{{ count_resolved }}</div>
-            </div>
-            <div class="stat-card">
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'rejected' %}stat-active{% endif %}" href="?status_filter=rejected">
                 <div class="stat-label">ถูกปฏิเสธ</div>
                 <div class="stat-value red">{{ count_rejected }}</div>
-            </div>
+            </a>
         </div>
 
         <!-- TABLE -->
