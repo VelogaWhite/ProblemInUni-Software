@@ -698,6 +698,13 @@
                         <input type="text" id="location" name="location" class="form-control" placeholder="เช่น ตึก 81 ชั้น 4 ห้อง 412">
                         <div class="field-error" id="err-location">⚠ กรุณาระบุสถานที่เกิดเหตุ</div>
                     </div>
+                    
+                    <!-- ส่วนอัปโหลดรูปภาพที่เพิ่มเข้ามา -->
+                    <div class="form-group">
+                        <label class="form-label" for="image">รูปภาพประกอบ (ถ้ามี)</label>
+                        <input type="file" id="image" name="image" class="form-control" accept="image/*" style="padding: 7px 14px;">
+                    </div>
+                    
                     <div class="modal-actions">
                         <button type="button" class="btn-cancel" onclick="document.getElementById('reportModal').classList.remove('open')">ยกเลิก</button>
                         <button type="button" onclick="validateAndConfirm()" class="btn-submit">ส่งรายงาน</button>

@@ -116,3 +116,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# เพิ่มการตั้งค่าสำหรับ Media (ไฟล์ที่ผู้ใช้อัปโหลด เช่น รูปภาพ)
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

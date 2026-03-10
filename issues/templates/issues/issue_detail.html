@@ -175,7 +175,9 @@
             width: 100%; max-height: 320px; overflow: hidden;
             border-radius: var(--radius-sm); margin-top: 16px;
             background: var(--bg);
+            transition: opacity 0.2s;
         }
+        .issue-image:hover { opacity: 0.9; }
         .issue-image img { width: 100%; height: 100%; object-fit: cover; }
 
         /* ── TIMELINE ── */
@@ -347,7 +349,7 @@
             <h1 class="issue-title">{{ issue.description }}</h1>
 
             {% if issue.image %}
-            <div class="issue-image">
+            <div class="issue-image" style="cursor: pointer;" onclick="openImageModal('{{ issue.image.url }}')" title="คลิกเพื่อดูรูปขนาดเต็ม">
                 <img src="{{ issue.image.url }}" alt="รูปปัญหา">
             </div>
             {% endif %}
@@ -486,6 +488,14 @@
         </div>
     </div>
 
+    <!-- IMAGE MODAL -->
+    <div id="imageModal" class="confirm-overlay" onclick="if(event.target===this) closeImageModal()" style="display:none;position:fixed;inset:0;background:rgba(15,15,15,0.8);backdrop-filter:blur(4px);z-index:400;align-items:center;justify-content:center;padding:24px;">
+        <div style="position:relative; max-width:90vw; max-height:90vh; animation:fadeUp 0.2s ease both;">
+            <button onclick="closeImageModal()" style="position:absolute; top:-16px; right:-16px; width:32px; height:32px; border-radius:50%; background:var(--danger); color:white; border:none; cursor:pointer; font-size:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; z-index:401;">✕</button>
+            <img id="popup-image" src="" alt="ภาพปัญหาขนาดเต็ม" style="max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        </div>
+    </div>
+
     <script>
         function openLogoutConfirm() {
             const m = document.getElementById('confirmModal');
@@ -494,12 +504,16 @@
         function closeConfirm() {
             document.getElementById('confirmModal').style.display = 'none';
         }
-    </script>
 
-    <!-- Make cards clickable from homepage -->
-    <script>
-        // Add click handler to homepage cards → navigate to issue_detail
-        // (handled by wrapping anchor in homepage.html below)
+        // ฟังก์ชันสำหรับเปิด-ปิดป๊อปอัปรูปภาพ
+        function openImageModal(imageUrl) {
+            document.getElementById('popup-image').src = imageUrl;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+            setTimeout(() => { document.getElementById('popup-image').src = ''; }, 200);
+        }
     </script>
 
 </body>
