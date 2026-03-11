@@ -108,13 +108,6 @@ def login_view(request):
 
 # ระบบออกจากระบบ
 def logout_view(request):
-<<<<<<< Updated upstream
-    logout(request)
-    return redirect('login') # ออกจากระบบแล้วเด้งไปหน้าเข้าสู่ระบบ
-=======
-    logout(request)  # logout ทันทีไม่ว่าจะ GET หรือ POST
-    return redirect('profile')
->>>>>>> Stashed changes
 
 # ระบบสมัครสมาชิก
 def register_view(request):
