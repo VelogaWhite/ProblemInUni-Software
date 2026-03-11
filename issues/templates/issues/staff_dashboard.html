@@ -327,6 +327,7 @@
                             <th>ปัญหา</th>
                             <th>สถานะ</th>
                             <th>จัดการ</th>
+                            <th style="text-align: center;">รูปภาพ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -361,10 +362,17 @@
                                     </div>
                                 </form>
                             </td>
+                            <td style="text-align: center;">
+                                {% if issue.image %}
+                                    <button type="button" class="btn-save" style="background:var(--accent-light); color:var(--accent); border:1px solid var(--accent); padding: 0 10px;" onclick="openImageModal('{{ issue.image.url }}')">ดูรูปภาพ</button>
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">-</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% empty %}
                         <tr class="empty-row">
-                            <td colspan="6">ไม่มีปัญหาในระบบ</td>
+                            <td colspan="7">ไม่มีปัญหาในระบบ</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -373,9 +381,6 @@
         </div>
 
     </main>
-
-    
-
 
     <!-- CONFIRM MODAL -->
     <div id="confirmModal" class="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
@@ -387,6 +392,14 @@
                 <button class="confirm-btn cancel" onclick="closeConfirm()">ยกเลิก</button>
                 <button class="confirm-btn danger" id="confirm-ok-btn" onclick="confirmAction()">ยืนยัน</button>
             </div>
+        </div>
+    </div>
+
+    <!-- IMAGE MODAL -->
+    <div id="imageModal" class="confirm-overlay" onclick="if(event.target===this) closeImageModal()">
+        <div class="confirm-box" style="max-width: 600px; padding: 16px; position: relative;">
+            <button onclick="closeImageModal()" style="position: absolute; top: -15px; right: -15px; background: var(--danger); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">✕</button>
+            <img id="popup-image" src="" alt="ภาพปัญหา" style="width: 100%; height: auto; max-height: 75vh; border-radius: 8px; object-fit: contain;">
         </div>
     </div>
 
@@ -449,6 +462,16 @@
             } else if (type === 'save' && form) {
                 form.submit();
             }
+        }
+
+        // ฟังก์ชันสำหรับเปิด-ปิดป๊อปอัปรูปภาพ
+        function openImageModal(imageUrl) {
+            document.getElementById('popup-image').src = imageUrl;
+            document.getElementById('imageModal').classList.add('open');
+        }
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('open');
+            setTimeout(() => { document.getElementById('popup-image').src = ''; }, 200);
         }
     </script>
 </body>
