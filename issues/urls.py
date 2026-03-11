@@ -10,4 +10,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_view, name='register'),
+
+    # Staff URLs
+    path('staff/', views.staff_dashboard, name='staff_dashboard'),
+    path('staff/update/<int:issue_id>/', views.update_issue_status, name='update_issue_status'),
 ]

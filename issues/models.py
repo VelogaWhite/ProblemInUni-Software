@@ -3,25 +3,55 @@ from django.contrib.auth.models import User
 
 class Issue(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'รอการถูกยืนยัน'),
-        ('confirmed', 'รับเรื่องแล้ว'),
-        ('resolved', 'แก้ไขเสร็จสิ้น'),
+        ('pending', 'Pending (รอการตรวจสอบ)'),
+        ('in_progress', 'In Progress (กำลังดำเนินการ)'),
+        ('resolved', 'Resolved (แก้ไขแล้ว)'),
+        ('rejected', 'Rejected (ปฏิเสธ/ยกเลิก)'),
     ]
 
-    description = models.TextField()
-    location = models.CharField(max_length=255)
-    image = models.ImageField(upload_to='issue_images/', null=True, blank=True)
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    created_at = models.DateTimeField(auto_now_add=True)
+    # ผู้ที่รายงานปัญหา (สมชาย)
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE) 
     
-    # --- เพิ่ม 2 บรรทัดนี้ ---
-    confirmed_at = models.DateTimeField(null=True, blank=True)
-    resolved_at = models.DateTimeField(null=True, blank=True)
-    # -----------------------
+    # รายละเอียดปัญหา 
+    description = models.TextField() 
+    
+    # สถานที่ 
+    location = models.CharField(max_length=255) 
+    
+    # รูปภาพประกอบ (ถ้ามี)
+    image = models.ImageField(upload_to='issue_images/', blank=True, null=True)
 
-    def get_status_display(self):
-        return dict(self.STATUS_CHOICES).get(self.status)
+    # สถานะของปัญหา 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending') 
+    
+    rejection_reason = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.description
+        return f"{self.location} - {self.description[:20]}"
+
+class IssueStatusLog(models.Model):
+    issue      = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='status_logs')
+    status     = models.CharField(max_length=20, choices=Issue.STATUS_CHOICES)
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    note       = models.TextField(blank=True, null=True)  # เก็บ rejection_reason ด้วย
+
+    class Meta:
+        ordering = ['changed_at']
+
+    def __str__(self):
+        return f"{self.issue} → {self.status} at {self.changed_at:%d/%m/%Y %H:%M}"
+class Notification(models.Model):
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    issue      = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='notifications')
+    message    = models.CharField(max_length=255)
+    is_read    = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.user} — {self.message}"

@@ -1,124 +1,520 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายละเอียดปัญหา - {{ issue.description|truncatechars:30 }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+    <title>{{ issue.description|truncatechars:40 }} - ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <header class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="{% url 'homepage' %}" class="text-2xl font-bold text-blue-600 hover:text-blue-800 transition">
-                ProbleminUni
-            </a>
-            <div class="flex items-center gap-4">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'profile' %}" class="text-gray-700 font-medium hover:text-blue-600 transition">{{ user.username }}</a>
-                    <a href="{% url 'logout' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition">ออกจากระบบ</a>
-                {% else %}
-                    <a href="{% url 'login' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition">เข้าสู่ระบบ</a>
-                {% endif %}
-            </div>
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --surface-hover: #F0EEE9;
+            --border: #E8E5DF;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --accent-light: #EEF2FD;
+            --danger: #E63B2B;
+            --danger-light: #FEF0EE;
+            --success: #1C9E6B;
+            --success-light: #EAF7F2;
+            --warning: #D4870A;
+            --warning-light: #FEF5E7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+
+            /* status colors */
+            --c-pending:     #D4870A;
+            --c-in_progress: #2B5CE6;
+            --c-resolved:    #1C9E6B;
+            --c-rejected:    #E63B2B;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: rgba(247,246,243,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            padding: 0 32px; height: 62px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .navbar-brand {
+            font-weight: 700; font-size: 1.15rem; color: var(--accent);
+            letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; text-decoration: none;
+        }
+        .navbar-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+        .user-chip {
+            display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill);
+            font-size: 0.82rem; color: var(--text-secondary); font-weight: 500;
+            box-shadow: var(--shadow-sm); text-decoration: none;
+        }
+        .user-avatar {
+            width: 26px; height: 26px; border-radius: 50%; background: var(--accent);
+            color: white; font-size: 0.65rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            height: 38px; padding: 0 16px; border-radius: var(--radius-pill);
+            border: none; cursor: pointer; font-size: 0.84rem;
+            font-family: inherit; font-weight: 600; transition: all 0.15s; text-decoration: none;
+        }
+        .btn-logout { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-secondary); font-size: 0.84rem; font-weight: 600;
+            text-decoration: none; transition: color 0.15s;
+        }
+        .btn-back:hover { color: var(--accent); }
+
+        /* ── MAIN ── */
+        .main { max-width: 860px; margin: 0 auto; padding: 44px 32px 80px; }
+
+        /* ── BREADCRUMB ── */
+        .breadcrumb {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.82rem; color: var(--text-muted);
+            margin-bottom: 28px;
+            animation: fadeUp 0.3s ease both;
+        }
+        .breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+        .breadcrumb a:hover { color: var(--accent); }
+        .breadcrumb-sep { color: var(--border); }
+
+        /* ── ISSUE HEADER CARD ── */
+        .issue-header-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.35s 0.05s ease both;
+        }
+
+        .issue-header-card::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+        }
+        .issue-header-card.status-pending::before    { background: var(--c-pending); }
+        .issue-header-card.status-in_progress::before { background: var(--c-in_progress); }
+        .issue-header-card.status-resolved::before   { background: var(--c-resolved); }
+        .issue-header-card.status-rejected::before   { background: var(--c-rejected); }
+
+        .card-meta {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 14px; flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 12px; border-radius: var(--radius-pill);
+            font-size: 0.75rem; font-weight: 700;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        .badge-pending    { background: var(--warning-light); color: var(--c-pending); }
+        .badge-pending .badge-dot { background: var(--c-pending); }
+        .badge-in_progress { background: var(--accent-light); color: var(--c-in_progress); }
+        .badge-in_progress .badge-dot { background: var(--c-in_progress); animation: pulseDot 1.5s infinite; }
+        .badge-resolved   { background: var(--success-light); color: var(--c-resolved); }
+        .badge-resolved .badge-dot { background: var(--c-resolved); }
+        .badge-rejected   { background: var(--danger-light); color: var(--c-rejected); }
+        .badge-rejected .badge-dot { background: var(--c-rejected); }
+
+        @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+
+        .issue-date { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+
+        .issue-title {
+            font-size: 1.45rem; font-weight: 700;
+            letter-spacing: -0.025em; line-height: 1.35;
+            margin-bottom: 16px;
+        }
+
+        .issue-meta-row {
+            display: flex; flex-wrap: wrap; gap: 20px;
+            padding-top: 16px; border-top: 1px solid var(--border);
+        }
+        .meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); }
+        .meta-item svg { flex-shrink: 0; color: var(--text-muted); }
+        .meta-item strong { color: var(--text-primary); font-weight: 600; }
+
+        /* rejection box */
+        .rejection-box {
+            background: var(--danger-light); border: 1px solid #fad4d0;
+            border-radius: var(--radius-sm); padding: 12px 16px; margin-top: 16px;
+        }
+        .rejection-label { font-size: 0.75rem; font-weight: 700; color: var(--danger); margin-bottom: 4px; }
+        .rejection-text  { font-size: 0.875rem; color: #b02d20; }
+
+        /* issue image */
+        .issue-image {
+            width: 100%; max-height: 320px; overflow: hidden;
+            border-radius: var(--radius-sm); margin-top: 16px;
+            background: var(--bg);
+            transition: opacity 0.2s;
+        }
+        .issue-image:hover { opacity: 0.9; }
+        .issue-image img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* ── TIMELINE ── */
+        .timeline-section {
+            animation: fadeUp 0.35s 0.12s ease both;
+        }
+
+        .section-label {
+            font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            margin-bottom: 20px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+
+        /* vertical line */
+        .timeline::before {
+            content: '';
+            position: absolute; left: 11px; top: 12px;
+            width: 2px;
+            bottom: 12px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 0;
+            padding-bottom: 28px;
+        }
+        .timeline-item:last-child { padding-bottom: 0; }
+
+        /* dot on the line */
+        .tl-dot {
+            position: absolute;
+            left: -32px;
+            top: 10px;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            border: 3px solid var(--bg);
+            box-shadow: 0 0 0 2px var(--border);
+            z-index: 1;
+            transition: all 0.2s;
+        }
+
+        .tl-dot.pending    { background: var(--c-pending);     box-shadow: 0 0 0 2px var(--c-pending); }
+        .tl-dot.in_progress { background: var(--c-in_progress); box-shadow: 0 0 0 2px var(--c-in_progress); }
+        .tl-dot.resolved   { background: var(--c-resolved);    box-shadow: 0 0 0 2px var(--c-resolved); }
+        .tl-dot.rejected   { background: var(--c-rejected);    box-shadow: 0 0 0 2px var(--c-rejected); }
+        .tl-dot.future     { background: var(--border);        box-shadow: 0 0 0 2px var(--border); }
+
+        .tl-dot svg { width: 12px; height: 12px; color: white; }
+
+        .tl-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+        }
+        .tl-card.active {
+            border-color: currentColor;
+            box-shadow: var(--shadow-md);
+        }
+        .tl-card.active.pending    { border-color: var(--c-pending);     background: var(--warning-light); }
+        .tl-card.active.in_progress { border-color: var(--c-in_progress); background: var(--accent-light); }
+        .tl-card.active.resolved   { border-color: var(--c-resolved);    background: var(--success-light); }
+        .tl-card.active.rejected   { border-color: var(--c-rejected);    background: var(--danger-light); }
+        .tl-card.future { opacity: 0.45; }
+
+        .tl-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+
+        .tl-status-name {
+            font-size: 0.9rem; font-weight: 700; letter-spacing: -0.01em;
+        }
+        .tl-status-name.pending    { color: var(--c-pending); }
+        .tl-status-name.in_progress { color: var(--c-in_progress); }
+        .tl-status-name.resolved   { color: var(--c-resolved); }
+        .tl-status-name.rejected   { color: var(--c-rejected); }
+        .tl-status-name.future     { color: var(--text-muted); }
+
+        .tl-datetime { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; font-weight: 500; }
+
+        .tl-by {
+            font-size: 0.78rem; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 5px; margin-top: 4px;
+        }
+        .tl-mini-avatar {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--accent); color: white;
+            font-size: 0.55rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .tl-note {
+            margin-top: 10px; padding: 8px 12px;
+            background: rgba(0,0,0,0.04); border-radius: var(--radius-sm);
+            font-size: 0.8rem; color: var(--text-secondary);
+            border-left: 3px solid var(--border);
+        }
+        .tl-card.active.rejected .tl-note {
+            background: rgba(230,59,43,0.08); border-color: var(--c-rejected);
+            color: #b02d20;
+        }
+
+        .tl-future-label {
+            font-size: 0.82rem; color: var(--text-muted); font-style: italic;
+        }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        @media (max-width: 600px) {
+            .main { padding: 28px 16px 60px; }
+            .navbar { padding: 0 16px; }
+            .issue-header-card { padding: 20px 20px 20px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="{% url 'homepage' %}" class="navbar-brand">
+            <span class="navbar-brand-dot"></span>
+            ProbleminUni
+        </a>
+        <div class="navbar-right">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="user-chip">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>
+                    {{ user.username }}
+                </a>
+                
+                <button onclick="openLogoutConfirm()" class="btn btn-logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    ออกจากระบบ
+                </button>
+                <a id="logout-link" href="{% url 'logout' %}" style="display:none;"></a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn" style="background:var(--accent);color:white;">เข้าสู่ระบบ</a>
+            {% endif %}
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-12 max-w-4xl">
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            
-            <div class="flex justify-between items-start mb-4">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ issue.description }}</h1>
-                <span class="inline-block px-4 py-1.5 text-sm font-semibold rounded-full whitespace-nowrap
-                    {% if issue.status == 'pending' %} bg-yellow-100 text-yellow-800 
-                    {% elif issue.status == 'confirmed' %} bg-blue-100 text-blue-800 
-                    {% else %} bg-green-100 text-green-800 {% endif %}">
+    <main class="main">
+
+        <!-- BREADCRUMB -->
+        <div class="breadcrumb">
+            <a href="{% url 'homepage' %}">หน้าหลัก</a>
+            <span class="breadcrumb-sep">›</span>
+            <span>{{ issue.description|truncatechars:40 }}</span>
+        </div>
+
+        <!-- ISSUE HEADER -->
+        <div class="issue-header-card status-{{ issue.status }}">
+            <div class="card-meta">
+                <span class="badge badge-{{ issue.status }}">
+                    <span class="badge-dot"></span>
                     {{ issue.get_status_display }}
                 </span>
+                <span class="issue-date">รายงานเมื่อ {{ issue.created_at|date:"d M Y · H:i" }}</span>
             </div>
 
-            <p class="text-gray-500 text-md flex items-center mb-6">
-                <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                {{ issue.location }}
-            </p>
+            <h1 class="issue-title">{{ issue.description }}</h1>
 
             {% if issue.image %}
-            <div class="mb-8 rounded-lg overflow-hidden bg-gray-100">
-                <img src="{{ issue.image.url }}" alt="รูปปัญหา" class="w-full h-auto object-cover">
+            <div class="issue-image" style="cursor: pointer;" onclick="openImageModal('{{ issue.image.url }}')" title="คลิกเพื่อดูรูปขนาดเต็ม">
+                <img src="{{ issue.image.url }}" alt="รูปปัญหา">
             </div>
             {% endif %}
 
-            <h2 class="text-xl font-semibold text-gray-700 mb-6 border-b pb-3">ไทม์ไลน์การดำเนินการ</h2>
+            {% if issue.status == 'rejected' and issue.rejection_reason %}
+            <div class="rejection-box">
+                <p class="rejection-label">เหตุผลที่ปฏิเสธ</p>
+                <p class="rejection-text">{{ issue.rejection_reason }}</p>
+            </div>
+            {% endif %}
 
-            <ol class="relative border-l border-gray-200 dark:border-gray-700 ml-4">                  
-                <li class="mb-10 ml-6">            
-                    <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
-                        <svg class="w-3 h-3 text-blue-800 dark:text-blue-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4Z"/>
-                            <path d="M0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-                        </svg>
-                    </span>
-                    <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900 dark:text-white">
-                        แจ้งปัญหา
-                        {% if issue.status == 'pending' %}
-                        <span class="bg-yellow-100 text-yellow-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300 ml-3">ล่าสุด</span>
-                        {% endif %}
-                    </h3>
-                    <time class="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
-                        แจ้งเมื่อ {{ issue.created_at|date:"l, d F Y, H:i" }}
-                    </time>
-                    <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-                        ผู้ใช้ {{ issue.reporter.username }} ได้รายงานปัญหาเข้ามาในระบบ
-                    </p>
-                </li>
-                
-                {% if issue.confirmed_at %}
-                <li class="mb-10 ml-6">
-                    <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
-                        <svg class="w-3 h-3 text-blue-800 dark:text-blue-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
-                        </svg>
-                    </span>
-                    <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
-                        รับเรื่องแล้ว
-                        {% if issue.status == 'confirmed' %}
-                        <span class="bg-blue-100 text-blue-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 ml-3">ล่าสุด</span>
-                        {% endif %}
-                    </h3>
-                    <time class="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
-                        ยืนยันเมื่อ {{ issue.confirmed_at|date:"l, d F Y, H:i" }}
-                    </time>
-                    <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-                        ผู้ดูแลระบบได้ยืนยันและรับเรื่องปัญหานี้แล้ว กำลังอยู่ในระหว่างการดำเนินการ
-                    </p>
-                </li>
-                {% endif %}
-
-                {% if issue.resolved_at %}
-                <li class="ml-6">
-                    <span class="absolute flex items-center justify-center w-6 h-6 bg-green-100 rounded-full -left-3 ring-8 ring-white dark:ring-gray-900 dark:bg-green-900">
-                        <svg class="w-3 h-3 text-green-800 dark:text-green-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                           <path d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z"/>
-                           <path d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 .998-1.066A8.5 8.5 0 0 0 12.5 0Z"/>
-                        </svg>
-                    </span>
-                    <h3 class="mb-1 text-lg font-semibold text-gray-900 dark:text-white">
-                        แก้ไขเสร็จสิ้น
-                        {% if issue.status == 'resolved' %}
-                        <span class="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300 ml-3">ล่าสุด</span>
-                        {% endif %}
-                    </h3>
-                    <time class="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
-                        แก้ไขเมื่อ {{ issue.resolved_at|date:"l, d F Y, H:i" }}
-                    </time>
-                    <p class="text-base font-normal text-gray-500 dark:text-gray-400">
-                        ปัญหานี้ได้รับการแก้ไขเรียบร้อยแล้ว
-                    </p>
-                </li>
-                {% endif %}
-            </ol>
+            <div class="issue-meta-row">
+                <div class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <strong>{{ issue.location }}</strong>
+                </div>
+                <div class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    รายงานโดย <strong>{{ issue.reporter.username }}</strong>
+                </div>
+            </div>
         </div>
+
+        <!-- TIMELINE -->
+        <div class="timeline-section">
+            <div class="section-label">ความคืบหน้า</div>
+
+            <div class="timeline">
+
+                {% comment %}
+                  สร้าง ordered steps เพื่อ render timeline
+                  logs มาจาก issue.status_logs.all() เรียง changed_at ASC
+                {% endcomment %}
+
+                {% comment %}
+                  Step 1: pending — ใช้ issue.created_at เสมอ ไม่ต้องรอ log
+                {% endcomment %}
+                <div class="timeline-item">
+                    <div class="tl-dot pending">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="tl-card active pending">
+                        <div class="tl-header">
+                            <span class="tl-status-name pending">Pending (รับรายงานแล้ว)</span>
+                            <span class="tl-datetime">{{ issue.created_at|date:"d M Y · H:i" }}</span>
+                        </div>
+                        <div class="tl-by">
+                            <div class="tl-mini-avatar">{{ issue.reporter.username|first|upper }}</div>
+                            รายงานโดย {{ issue.reporter.username }}
+                        </div>
+                    </div>
+                </div>
+
+                {% comment %}
+                  Step 2+: แสดง log จริง (ข้าม pending) แล้วต่อด้วย future steps ตาม status
+                {% endcomment %}
+                {% for log in logs %}
+                    {% if log.status != 'pending' %}
+                    <div class="timeline-item">
+                        <div class="tl-dot {{ log.status }}">
+                            {% if log.status == 'in_progress' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            {% elif log.status == 'resolved' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            {% elif log.status == 'rejected' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            {% endif %}
+                        </div>
+                        <div class="tl-card active {{ log.status }}">
+                            <div class="tl-header">
+                                <span class="tl-status-name {{ log.status }}">{{ log.get_status_display }}</span>
+                                <span class="tl-datetime">{{ log.changed_at|date:"d M Y · H:i" }}</span>
+                            </div>
+                            {% if log.changed_by %}
+                            <div class="tl-by">
+                                <div class="tl-mini-avatar">{{ log.changed_by.username|first|upper }}</div>
+                                ดำเนินการโดย {{ log.changed_by.username }}
+                            </div>
+                            {% endif %}
+                            {% if log.note %}
+                            <div class="tl-note">{{ log.note }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% comment %} Future steps — เสมอ 3 step ยกเว้น rejected {% endcomment %}
+                {% if issue.status == 'pending' %}
+                    <div class="timeline-item">
+                        <div class="tl-dot future">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        </div>
+                        <div class="tl-card future">
+                            <div class="tl-header"><span class="tl-status-name future">กำลังดำเนินการ</span></div>
+                            <div class="tl-future-label">รอดำเนินการ...</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="tl-dot future">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="tl-card future">
+                            <div class="tl-header"><span class="tl-status-name future">แก้ไขแล้ว</span></div>
+                            <div class="tl-future-label">รอดำเนินการ...</div>
+                        </div>
+                    </div>
+                {% elif issue.status == 'in_progress' %}
+                    <div class="timeline-item">
+                        <div class="tl-dot future">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="tl-card future">
+                            <div class="tl-header"><span class="tl-status-name future">แก้ไขแล้ว</span></div>
+                            <div class="tl-future-label">รอดำเนินการ...</div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% comment %} resolved และ rejected ไม่มี future steps {% endcomment %}
+
+            </div>
+        </div>
+
     </main>
+
+    <!-- LOGOUT CONFIRM -->
+    <div id="confirmModal" class="confirm-overlay" onclick="if(event.target===this)closeConfirm()" style="display:none;position:fixed;inset:0;background:rgba(15,15,15,0.55);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:24px;">
+        <div style="background:var(--surface);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,0.18);width:100%;max-width:380px;padding:32px 28px 24px;text-align:center;animation:fadeUp 0.2s ease both;">
+            <div style="width:52px;height:52px;border-radius:50%;background:var(--danger-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem;">👋</div>
+            <div style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">ออกจากระบบ?</div>
+            <div style="font-size:0.84rem;color:var(--text-muted);line-height:1.6;margin-bottom:24px;">คุณต้องการออกจากระบบใช่ไหม? จะต้องเข้าสู่ระบบใหม่อีกครั้ง</div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeConfirm()" style="flex:1;height:42px;border-radius:var(--radius-pill);border:1px solid var(--border);background:var(--bg);color:var(--text-secondary);font-size:0.875rem;font-family:inherit;font-weight:600;cursor:pointer;">ยกเลิก</button>
+                <button onclick="document.getElementById('logout-link').click()" style="flex:1;height:42px;border-radius:var(--radius-pill);border:none;background:var(--danger);color:white;font-size:0.875rem;font-family:inherit;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(230,59,43,0.25);">ออกจากระบบ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMAGE MODAL -->
+    <div id="imageModal" class="confirm-overlay" onclick="if(event.target===this) closeImageModal()" style="display:none;position:fixed;inset:0;background:rgba(15,15,15,0.8);backdrop-filter:blur(4px);z-index:400;align-items:center;justify-content:center;padding:24px;">
+        <div style="position:relative; max-width:90vw; max-height:90vh; animation:fadeUp 0.2s ease both;">
+            <button onclick="closeImageModal()" style="position:absolute; top:-16px; right:-16px; width:32px; height:32px; border-radius:50%; background:var(--danger); color:white; border:none; cursor:pointer; font-size:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; z-index:401;">✕</button>
+            <img id="popup-image" src="" alt="ภาพปัญหาขนาดเต็ม" style="max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        </div>
+    </div>
+
+    <script>
+        function openLogoutConfirm() {
+            const m = document.getElementById('confirmModal');
+            m.style.display = 'flex';
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // ฟังก์ชันสำหรับเปิด-ปิดป๊อปอัปรูปภาพ
+        function openImageModal(imageUrl) {
+            document.getElementById('popup-image').src = imageUrl;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+            setTimeout(() => { document.getElementById('popup-image').src = ''; }, 200);
+        }
+    </script>
 
 </body>
 </html>

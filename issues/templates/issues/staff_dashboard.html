@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F0EEE9;
+            --surface: #FFFFFF;
+            --surface-hover: #F7F6F3;
+            --border: #E2DED7;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --accent-light: #EEF2FD;
+            --danger: #E63B2B;
+            --danger-light: #FEF0EE;
+            --success: #1C9E6B;
+            --success-light: #EAF7F2;
+            --warning: #D4870A;
+            --warning-light: #FEF5E7;
+            --dark: #1A1814;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: var(--dark);
+            padding: 0 32px; height: 62px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .navbar-brand {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 1.05rem; color: white;
+            letter-spacing: -0.02em; text-decoration: none;
+        }
+
+        .staff-badge {
+            background: rgba(43,92,230,0.2);
+            color: #7fa4f5;
+            font-size: 0.68rem; font-weight: 700;
+            padding: 3px 9px; border-radius: var(--radius-pill);
+            letter-spacing: 0.05em; text-transform: uppercase;
+            border: 1px solid rgba(43,92,230,0.25);
+        }
+
+        .navbar-right { display: flex; align-items: center; gap: 14px; }
+
+        .staff-info { font-size: 0.82rem; color: rgba(255,255,255,0.55); font-weight: 500; }
+        .staff-name { color: rgba(255,255,255,0.9); font-weight: 600; }
+
+        .btn-logout-dark {
+            display: inline-flex; align-items: center; gap: 6px;
+            height: 36px; padding: 0 14px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(255,255,255,0.12);
+            background: transparent; color: rgba(255,255,255,0.6);
+            font-size: 0.82rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s; text-decoration: none;
+        }
+        .btn-logout-dark:hover { background: rgba(230,59,43,0.15); border-color: rgba(230,59,43,0.3); color: #f87b70; }
+
+        /* MAIN */
+        .main { max-width: 1200px; margin: 0 auto; padding: 40px 32px 80px; }
+
+        .page-header { margin-bottom: 28px; animation: fadeUp 0.4s ease both; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 4px; }
+        .page-header p { font-size: 0.875rem; color: var(--text-muted); }
+
+        /* STATS */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.4s 0.05s ease both;
+        }
+
+        .stat-card {
+            text-decoration: none;
+            cursor: pointer;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .stat-value { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+        .stat-value.blue   { color: var(--accent); }
+        .stat-value.green  { color: var(--success); }
+        .stat-value.red    { color: var(--danger); }
+        .stat-value.orange { color: var(--warning); }
+
+        /* TABLE */
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            animation: fadeUp 0.4s 0.1s ease both;
+        }
+
+        .table-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .table-title { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr { background: var(--bg); }
+        thead th {
+            padding: 11px 18px;
+            font-size: 0.72rem; font-weight: 700;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em;
+            text-align: left; white-space: nowrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.12s;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--surface-hover); }
+
+        td {
+            padding: 13px 18px;
+            font-size: 0.84rem;
+            color: var(--text-primary);
+            vertical-align: middle;
+        }
+
+        .td-date { color: var(--text-muted); font-size: 0.78rem; white-space: nowrap; }
+        .td-reporter { font-weight: 600; }
+        .td-location { color: var(--text-secondary); }
+        .td-desc { color: var(--text-secondary); max-width: 240px; }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: var(--radius-pill);
+            font-size: 0.72rem; font-weight: 700; white-space: nowrap;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        .badge-pending    { background: var(--warning-light); color: var(--warning); }
+        .badge-pending .badge-dot { background: var(--warning); }
+        .badge-in_progress { background: var(--accent-light); color: var(--accent); }
+        .badge-in_progress .badge-dot { background: var(--accent); animation: pulseDot 1.5s infinite; }
+        .badge-resolved   { background: var(--success-light); color: var(--success); }
+        .badge-resolved .badge-dot { background: var(--success); }
+        .badge-rejected   { background: var(--danger-light); color: var(--danger); }
+        .badge-rejected .badge-dot { background: var(--danger); }
+
+        @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+
+        /* ACTION CELL */
+        .action-cell { min-width: 220px; }
+
+        .action-form { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+        .action-row { display: flex; gap: 6px; width: 100%; }
+
+        .status-select {
+            flex: 1;
+            height: 34px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0 10px;
+            font-size: 0.82rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg);
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .status-select:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 2px rgba(43,92,230,0.1); }
+
+        .btn-save {
+            height: 34px; padding: 0 14px;
+            border-radius: var(--radius-sm); border: none;
+            background: var(--accent); color: white;
+            font-size: 0.78rem; font-family: inherit; font-weight: 700;
+            cursor: pointer; transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-save:hover { background: #2250cc; }
+
+        .rejection-input {
+            width: 100%;
+            height: 32px;
+            border: 1px solid #fad4d0;
+            border-radius: var(--radius-sm);
+            padding: 0 10px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--danger-light);
+            outline: none;
+            transition: all 0.2s;
+        }
+        .rejection-input:focus { border-color: var(--danger); box-shadow: 0 0 0 2px rgba(230,59,43,0.1); }
+        .rejection-input::placeholder { color: #d0897f; }
+        .rejection-input.hidden { display: none; }
+
+        .empty-row td { text-align: center; padding: 64px; color: var(--text-muted); font-size: 0.9rem; }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+        @media (max-width: 900px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .table-wrap { overflow-x: auto; }
+        }
+
+        /* CONFIRM MODAL */
+        .confirm-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,15,15,0.6);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 300; align-items: center; justify-content: center; padding: 24px;
+        }
+        .confirm-overlay.open { display: flex; }
+        .confirm-box {
+            background: var(--surface); border-radius: 18px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            width: 100%; max-width: 380px;
+            padding: 32px 28px 24px; text-align: center;
+            animation: confirmIn 0.2s ease both;
+        }
+        @keyframes confirmIn { from{opacity:0;transform:scale(0.94) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        .confirm-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.4rem; }
+        .confirm-icon.warn   { background: var(--danger-light); }
+        .confirm-icon.info   { background: var(--accent-light); }
+        .confirm-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 8px; color: var(--text-primary); }
+        .confirm-desc  { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
+        .confirm-actions { display: flex; gap: 10px; }
+        .confirm-btn { flex: 1; height: 42px; border-radius: var(--radius-pill); border: none; font-size: 0.875rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        .confirm-btn.cancel { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+        .confirm-btn.cancel:hover { background: var(--surface-hover); }
+        .confirm-btn.danger { background: var(--danger); color: white; box-shadow: 0 2px 8px rgba(230,59,43,0.25); }
+        .confirm-btn.danger:hover { background: #c42d1e; transform: translateY(-1px); }
+        .confirm-btn.primary { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(43,92,230,0.25); }
+        .confirm-btn.primary:hover { background: #2250cc; transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="{% url 'staff_dashboard' %}" class="navbar-brand">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            ProbleminUni
+            <span class="staff-badge">Staff</span>
+        </a>
+        <div class="navbar-right">
+            <span class="staff-info">เจ้าหน้าที่: <span class="staff-name">{{ user.username }}</span></span>
+            <button onclick="openConfirm('logout')" class="btn-logout-dark">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                ออกจากระบบ
+            </button>
+            <a id="logout-link" href="{% url 'logout' %}" style="display:none;"></a>
+        </div>
+    </header>
+
+    <main class="main">
+
+        <div class="page-header">
+            <h1>รายการปัญหาทั้งหมด</h1>
+            <p>จัดการและอัปเดตสถานะปัญหาที่รายงานเข้ามา</p>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <a class="stat-card {% if not request.GET.status_filter %}stat-active{% endif %}" href="?">
+                <div class="stat-label">ทั้งหมด</div>
+                <div class="stat-value blue">{{ count_total }}</div>
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'pending' %}stat-active{% endif %}" href="?status_filter=pending">
+                <div class="stat-label">รอดำเนินการ</div>
+                <div class="stat-value orange">{{ count_pending }}</div>
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'in_progress' %}stat-active{% endif %}" href="?status_filter=in_progress">
+                <div class="stat-label">กำลังดำเนินการ</div>
+                <div class="stat-value blue">{{ count_in_progress }}</div>
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'resolved' %}stat-active{% endif %}" href="?status_filter=resolved">
+                <div class="stat-label">แก้ไขแล้ว</div>
+                <div class="stat-value green">{{ count_resolved }}</div>
+            </a>
+            <a class="stat-card {% if request.GET.status_filter == 'rejected' %}stat-active{% endif %}" href="?status_filter=rejected">
+                <div class="stat-label">ถูกปฏิเสธ</div>
+                <div class="stat-value red">{{ count_rejected }}</div>
+            </a>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-wrap">
+            <div class="table-header">
+                <span class="table-title">รายงานทั้งหมด</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>วันที่แจ้ง</th>
+                            <th>ผู้แจ้ง</th>
+                            <th>สถานที่</th>
+                            <th>ปัญหา</th>
+                            <th>สถานะ</th>
+                            <th>จัดการ</th>
+                            <th style="text-align: center;">รูปภาพ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for issue in issues %}
+                        <tr>
+                            <td class="td-date">{{ issue.created_at|date:"d M Y" }}<br><span style="font-size:0.72rem;opacity:0.7;">{{ issue.created_at|date:"H:i" }}</span></td>
+                            <td class="td-reporter">{{ issue.reporter.username }}</td>
+                            <td class="td-location">{{ issue.location }}</td>
+                            <td class="td-desc">{{ issue.description|truncatechars:40 }}</td>
+                            <td>
+                                <span class="badge badge-{{ issue.status }}">
+                                    <span class="badge-dot"></span>
+                                    {{ issue.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="action-cell">
+                                <form action="{% url 'update_issue_status' issue.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class="action-form">
+                                        <div class="action-row">
+                                            <select name="status" class="status-select" onchange="toggleReasonInput(this, {{ issue.id }})">
+                                                {% for value, label in status_choices %}
+                                                    <option value="{{ value }}" {% if issue.status == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="button" class="btn-save" onclick="openConfirm('save', this.closest('form'))">บันทึก</button>
+                                        </div>
+                                        <input type="text" name="rejection_reason" id="reason_{{ issue.id }}"
+                                            placeholder="ระบุเหตุผลที่ปฏิเสธ..."
+                                            value="{{ issue.rejection_reason|default_if_none:'' }}"
+                                            class="rejection-input {% if issue.status != 'rejected' %}hidden{% endif %}">
+                                    </div>
+                                </form>
+                            </td>
+                            <td style="text-align: center;">
+                                {% if issue.image %}
+                                    <button type="button" class="btn-save" style="background:var(--accent-light); color:var(--accent); border:1px solid var(--accent); padding: 0 10px;" onclick="openImageModal('{{ issue.image.url }}')">ดูรูปภาพ</button>
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr class="empty-row">
+                            <td colspan="7">ไม่มีปัญหาในระบบ</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CONFIRM MODAL -->
+    <div id="confirmModal" class="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
+        <div class="confirm-box">
+            <div class="confirm-icon warn" id="confirm-icon">⚠️</div>
+            <div class="confirm-title" id="confirm-title">ยืนยันการดำเนินการ</div>
+            <div class="confirm-desc"  id="confirm-desc">คุณแน่ใจหรือไม่?</div>
+            <div class="confirm-actions">
+                <button class="confirm-btn cancel" onclick="closeConfirm()">ยกเลิก</button>
+                <button class="confirm-btn danger" id="confirm-ok-btn" onclick="confirmAction()">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMAGE MODAL -->
+    <div id="imageModal" class="confirm-overlay" onclick="if(event.target===this) closeImageModal()">
+        <div class="confirm-box" style="max-width: 600px; padding: 16px; position: relative;">
+            <button onclick="closeImageModal()" style="position: absolute; top: -15px; right: -15px; background: var(--danger); color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">✕</button>
+            <img id="popup-image" src="" alt="ภาพปัญหา" style="width: 100%; height: auto; max-height: 75vh; border-radius: 8px; object-fit: contain;">
+        </div>
+    </div>
+
+    <script>
+        function toggleReasonInput(selectElement, issueId) {
+            const reasonInput = document.getElementById('reason_' + issueId);
+            if (selectElement.value === 'rejected') {
+                reasonInput.classList.remove('hidden');
+                reasonInput.required = true;
+            } else {
+                reasonInput.classList.add('hidden');
+                reasonInput.required = false;
+            }
+        }
+
+        let _confirmType = null;
+        let _pendingForm = null;
+
+        const confirmConfigs = {
+            logout: {
+                icon: '👋', iconClass: 'warn',
+                title: 'ออกจากระบบ?',
+                desc: 'คุณต้องการออกจากระบบใช่ไหม? จะต้องเข้าสู่ระบบใหม่อีกครั้ง',
+                okText: 'ออกจากระบบ', okClass: 'danger'
+            },
+            save: {
+                icon: '💾', iconClass: 'info',
+                title: 'บันทึกการเปลี่ยนแปลง?',
+                desc: 'การเปลี่ยนสถานะจะมีผลทันทีและผู้แจ้งจะเห็นการเปลี่ยนแปลงนี้',
+                okText: 'บันทึก', okClass: 'primary'
+            }
+        };
+
+        function openConfirm(type, formEl) {
+            _confirmType = type;
+            _pendingForm = formEl || null;
+            const cfg = confirmConfigs[type];
+            document.getElementById('confirm-icon').textContent = cfg.icon;
+            document.getElementById('confirm-icon').className = 'confirm-icon ' + cfg.iconClass;
+            document.getElementById('confirm-title').textContent = cfg.title;
+            document.getElementById('confirm-desc').textContent = cfg.desc;
+            const okBtn = document.getElementById('confirm-ok-btn');
+            okBtn.textContent = cfg.okText;
+            okBtn.className = 'confirm-btn ' + cfg.okClass;
+            document.getElementById('confirmModal').classList.add('open');
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirmModal').classList.remove('open');
+            _confirmType = null;
+            _pendingForm = null;
+        }
+
+        function confirmAction() {
+            const type = _confirmType;
+            const form = _pendingForm;
+            closeConfirm();
+            if (type === 'logout') {
+                document.getElementById('logout-link').click();
+            } else if (type === 'save' && form) {
+                form.submit();
+            }
+        }
+
+        // ฟังก์ชันสำหรับเปิด-ปิดป๊อปอัปรูปภาพ
+        function openImageModal(imageUrl) {
+            document.getElementById('popup-image').src = imageUrl;
+            document.getElementById('imageModal').classList.add('open');
+        }
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('open');
+            setTimeout(() => { document.getElementById('popup-image').src = ''; }, 200);
+        }
+    </script>
+</body>
+</html>

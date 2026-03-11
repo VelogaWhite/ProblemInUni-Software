@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import Issue
+from .models import Issue, IssueStatusLog, Notification
 from .forms import RegisterForm
 
 def homepage(request):
@@ -26,7 +26,12 @@ def homepage(request):
         )
 
     issues = issues_query.order_by('-created_at')
-    return render(request, 'issues/homepage.html', {'issues': issues, 'status_choices': Issue.STATUS_CHOICES})
+    notif_count = request.user.notifications.filter(is_read=False).count() if request.user.is_authenticated else 0
+    return render(request, 'issues/homepage.html', {
+        'issues': issues,
+        'status_choices': Issue.STATUS_CHOICES,
+        'notif_count': notif_count,
+    })
 
 def profile(request):
     # ตรวจสอบว่าผู้ใช้ล็อกอินหรือยัง
@@ -37,11 +42,22 @@ def profile(request):
         # ถ้ายังไม่ล็อกอิน ส่งลิสต์ว่างๆ ไป (เดี๋ยวเราไปจัดการแสดงผลต่อใน HTML)
         user_issues = []
         
-    return render(request, 'issues/profile.html', {'user_issues': user_issues})
+    notif_count = request.user.notifications.filter(is_read=False).count() if request.user.is_authenticated else 0
+    notifications = request.user.notifications.all()[:10] if request.user.is_authenticated else []
+    # mark all as read when user visits profile
+    if request.user.is_authenticated:
+        request.user.notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'issues/profile.html', {
+        'user_issues': user_issues,
+        'notif_count': notif_count,
+        'notifications': notifications,
+    })
 
 def issue_detail(request, issue_id):
     issue = get_object_or_404(Issue, pk=issue_id)
-    return render(request, 'issues/issue_detail.html', {'issue': issue})
+    logs  = issue.status_logs.all()
+    notif_count = request.user.notifications.filter(is_read=False).count() if request.user.is_authenticated else 0
+    return render(request, 'issues/issue_detail.html', {'issue': issue, 'logs': logs, 'notif_count': notif_count})
 
 @login_required(login_url='login')
 def report_issue(request):
@@ -51,12 +67,18 @@ def report_issue(request):
         image = request.FILES.get('image')
         
         if description and location:
-            Issue.objects.create(
+            issue = Issue.objects.create(
                 description=description,
                 location=location,
                 image=image,
                 reporter=request.user,
                 status='pending'
+            )
+            IssueStatusLog.objects.create(
+                issue=issue,
+                status='pending',
+                changed_by=request.user,
+                note='รายงานปัญหาเข้าระบบ'
             )
             return redirect('profile')
     return redirect('homepage')
@@ -64,17 +86,16 @@ def report_issue(request):
 # ระบบเข้าสู่ระบบ
 def login_view(request):
     if request.method == 'POST':
-        # รับค่าจากฟอร์มในหน้า Profile
         user_name = request.POST.get('username')
         pass_word = request.POST.get('password')
         
-        # ตรวจสอบความถูกต้อง
         user = authenticate(request, username=user_name, password=pass_word)
         if user is not None:
             login(request, user)
-            if user.is_superuser:
-                return redirect('/admin/')
-            return redirect('homepage') # ล็อกอินสำเร็จให้กลับไปหน้า Dashboard
+            # ถ้าเป็น Staff ให้วิ่งไปหน้า Staff Dashboard
+            if user.is_staff or user.is_superuser:
+                return redirect('staff_dashboard')
+            return redirect('homepage') 
         else:
             messages.error(request, 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!')
             return redirect('profile')
@@ -100,3 +121,71 @@ def register_view(request):
         form = RegisterForm()
         
     return render(request, 'issues/register.html', {'form': form})
+
+# ==========================================
+# ส่วนของ Staff
+# ==========================================
+@login_required(login_url='login')
+def staff_dashboard(request):
+    if not request.user.is_staff and not request.user.is_superuser:
+        return redirect('homepage')
+
+    all_issues = Issue.objects.all()
+    status_filter = request.GET.get('status_filter', '')
+    if status_filter:
+        issues = all_issues.filter(status=status_filter).order_by('-created_at')
+    else:
+        issues = all_issues.order_by('-created_at')
+
+    return render(request, 'issues/staff_dashboard.html', {
+        'issues': issues,
+        'status_choices': Issue.STATUS_CHOICES,
+        'count_total':       all_issues.count(),
+        'count_pending':     all_issues.filter(status='pending').count(),
+        'count_in_progress': all_issues.filter(status='in_progress').count(),
+        'count_resolved':    all_issues.filter(status='resolved').count(),
+        'count_rejected':    all_issues.filter(status='rejected').count(),
+    })
+
+@login_required(login_url='login')
+def update_issue_status(request, issue_id):
+    if request.method == 'POST' and (request.user.is_staff or request.user.is_superuser):
+        issue = get_object_or_404(Issue, pk=issue_id)
+        new_status = request.POST.get('status')
+        # รับค่าเหตุผลจากฟอร์ม
+        rejection_reason = request.POST.get('rejection_reason', '') 
+        
+        if new_status in dict(Issue.STATUS_CHOICES).keys():
+            issue.status = new_status
+            
+            # ถ้าสถานะเป็น rejected ให้เซฟเหตุผลลงไปด้วย
+            if new_status == 'rejected':
+                issue.rejection_reason = rejection_reason
+            else:
+                issue.rejection_reason = '' # ล้างค่าทิ้งถ้าเปลี่ยนเป็นสถานะอื่น
+                
+            issue.save()
+
+            # บันทึก log การเปลี่ยนสถานะ
+            IssueStatusLog.objects.create(
+                issue=issue,
+                status=new_status,
+                changed_by=request.user,
+                note=rejection_reason if new_status == 'rejected' else ''
+            )
+
+            # สร้าง notification ให้ผู้แจ้งปัญหา
+            status_labels = {
+                'pending':     'รอการตรวจสอบ',
+                'in_progress': 'กำลังดำเนินการแล้ว',
+                'resolved':    'แก้ไขเสร็จแล้ว ✓',
+                'rejected':    'ถูกปฏิเสธ',
+            }
+            label = status_labels.get(new_status, new_status)
+            Notification.objects.create(
+                user=issue.reporter,
+                issue=issue,
+                message=f'ปัญหา "{issue.description[:30]}" ถูกอัปเดตเป็น: {label}'
+            )
+            
+    return redirect('staff_dashboard')
