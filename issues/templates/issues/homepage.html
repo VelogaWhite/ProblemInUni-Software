@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --surface-hover: #F0EEE9;
+            --border: #E8E5DF;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --accent-light: #EEF2FD;
+            --danger: #E63B2B;
+            --danger-light: #FEF0EE;
+            --success: #1C9E6B;
+            --success-light: #EAF7F2;
+            --warning: #D4870A;
+            --warning-light: #FEF5E7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(247,246,243,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0 32px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .navbar-brand-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px 6px 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .user-chip:hover { border-color: #ccc; background: var(--surface-hover); }
+
+        .user-avatar {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            height: 38px;
+            padding: 0 16px;
+            border-radius: var(--radius-pill);
+            border: none;
+            cursor: pointer;
+            font-size: 0.84rem;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.15s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+
+        .btn-login {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 8px rgba(43,92,230,0.3);
+        }
+        .btn-login:hover { background: #2250cc; box-shadow: 0 4px 12px rgba(43,92,230,0.4); transform: translateY(-1px); }
+
+        /* MAIN */
+        .main { max-width: 1140px; margin: 0 auto; padding: 44px 32px 80px; }
+
+        /* PAGE HEADER */
+        .page-header {
+            margin-bottom: 28px;
+            padding: 36px 44px;
+            background: linear-gradient(130deg, #2B5CE6 0%, #1836a8 100%);
+            border-radius: 22px;
+            position: relative; overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+        }
+        .page-header::after {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 260px; height: 260px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); pointer-events: none;
+        }
+        .page-header::before {
+            content: '';
+            position: absolute; bottom: -80px; left: 25%;
+            width: 320px; height: 320px; border-radius: 50%;
+            background: rgba(255,255,255,0.04); pointer-events: none;
+        }
+        .page-header h1 {
+            color: white; font-size: 1.9rem; font-weight: 800;
+            letter-spacing: -0.03em; margin-bottom: 6px; position: relative;
+        }
+        .page-header p { color: rgba(255,255,255,0.7); font-size: 0.875rem; position: relative; }
+        .header-stats {
+            display: flex; gap: 12px; margin-top: 22px; position: relative; flex-wrap: wrap;
+        }
+        .header-stat {
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 12px; padding: 10px 18px;
+            backdrop-filter: blur(8px); min-width: 90px;
+        }
+        .header-stat-num { font-size: 1.5rem; font-weight: 800; color: white; line-height: 1; }
+        .header-stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-top: 3px; font-weight: 500; letter-spacing: 0.02em; }
+
+        /* TOOLBAR */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            animation: fadeUp 0.4s 0.05s ease both;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-wrap { flex: 1; min-width: 220px; position: relative; }
+        .search-icon {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); pointer-events: none; width: 15px; height: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 42px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            background: var(--surface);
+            padding: 0 14px 0 40px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,92,230,0.1); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .btn-search {
+            height: 42px; padding: 0 20px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--accent); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+            box-shadow: 0 2px 8px rgba(43,92,230,0.25);
+        }
+        .btn-search:hover { background: #2250cc; transform: translateY(-1px); }
+
+        /* Filter dropdown */
+        .filter-dropdown { position: relative; z-index: 10; }
+
+        .filter-btn {
+            height: 42px; padding: 0 18px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+            box-shadow: var(--shadow-sm);
+            display: flex; align-items: center; gap: 7px;
+            list-style: none;
+            outline: none;
+        }
+        .filter-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+        .filter-btn.active { border-color: var(--accent); color: var(--accent); }
+
+        .filter-menu {
+            display: none;
+            position: absolute; right: 0; top: calc(100% + 8px);
+            width: 200px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            z-index: 50;
+        }
+        .filter-menu.open { display: block; animation: dropIn 0.15s ease both; }
+
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .filter-menu a {
+            display: block;
+            padding: 9px 16px;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.1s;
+            font-weight: 500;
+        }
+        .filter-menu a:hover { background: var(--accent-light); color: var(--accent); }
+        .filter-menu a.active { background: var(--accent-light); color: var(--accent); font-weight: 700; }
+
+        .btn-report {
+            height: 42px; padding: 0 20px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--danger); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; gap: 7px;
+            box-shadow: 0 2px 8px rgba(230,59,43,0.25);
+        }
+        .btn-report:hover { background: #c42d1e; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(230,59,43,0.35); }
+
+        /* CARDS GRID */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .issue-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(.25,.8,.25,1);
+            display: flex;
+            flex-direction: column;
+            animation: fadeUp 0.4s ease both;
+            position: relative;
+            height: 100%;
+            isolation: isolate;
+        }
+
+        .cards-grid > a {
+            display: flex !important;
+            flex-direction: column;
+        }
+
+        .issue-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+        }
+
+        .issue-card.status-pending::before    { background: var(--warning); }
+        .issue-card.status-in_progress::before { background: var(--accent); }
+        .issue-card.status-resolved::before   { background: var(--success); }
+        .issue-card.status-rejected::before   { background: var(--danger); }
+
+        .issue-card:hover { box-shadow: 0 16px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.05); border-color: #C8C4BD; transform: translateY(-4px); }
+
+        .card-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 9px; flex: 1; min-height: 0; }
+        .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+
+        .card-image { width: 100%; height: 180px; overflow: hidden; background: var(--bg); flex-shrink: 0; }
+        .card-image-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+            background: linear-gradient(145deg, #eeebe5 0%, #e3dfd7 100%);
+        }
+        .card-image-placeholder span { font-size: 0.72rem; color: #B8B3AB; font-weight: 600; letter-spacing: 0.04em; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .issue-card:hover .card-image img { transform: scale(1.04); }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: var(--radius-pill);
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.01em;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .badge-pending    { background: var(--warning-light); color: var(--warning); }
+        .badge-pending .badge-dot { background: var(--warning); }
+        .badge-in_progress { background: var(--accent-light); color: var(--accent); }
+        .badge-in_progress .badge-dot { background: var(--accent); animation: pulseDot 1.5s infinite; }
+        .badge-resolved   { background: var(--success-light); color: var(--success); }
+        .badge-resolved .badge-dot { background: var(--success); }
+        .badge-rejected   { background: var(--danger-light); color: var(--danger); }
+        .badge-rejected .badge-dot { background: var(--danger); }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.75); }
+        }
+
+        .card-date { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
+        .card-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.45;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .rejection-box {
+            background: var(--danger-light); border: 1px solid #fad4d0;
+            border-radius: var(--radius-sm); padding: 10px 12px; flex-shrink: 0;
+        }
+        .rejection-label { font-size: 0.72rem; font-weight: 700; color: var(--danger); margin-bottom: 3px; }
+        .rejection-text  { font-size: 0.82rem; color: #b02d20; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .card-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-top: 12px; border-top: 1px solid var(--border); margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .card-location { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+        .card-author { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--text-muted); }
+        .mini-avatar {
+            width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+            color: white; font-size: 0.6rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* EMPTY */
+        .empty-state {
+            grid-column: 1/-1; text-align: center; padding: 72px 0;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); box-shadow: var(--shadow-sm);
+        }
+        .empty-state p { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,15,15,0.55); backdrop-filter: blur(4px);
+            z-index: 200; align-items: center; justify-content: center; padding: 24px;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--surface); border-radius: 20px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            width: 100%; max-width: 500px; padding: 36px;
+            position: relative; animation: modalIn 0.25s ease both;
+            max-height: 90vh; overflow-y: auto; /* เผื่อฟอร์มยาว */
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 32px; height: 32px; border-radius: 50%; border: none;
+            background: var(--surface-hover); color: var(--text-secondary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s; font-size: 1.1rem;
+        }
+        .modal-close:hover { background: var(--border); color: var(--text-primary); }
+
+        .modal h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 24px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 0.84rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; }
+        .form-control {
+            width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 10px 14px; font-size: 0.875rem; font-family: inherit;
+            color: var(--text-primary); background: var(--bg); outline: none;
+            transition: all 0.2s; resize: none;
+        }
+        .form-control:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(43,92,230,0.08); }
+        .form-control::placeholder { color: var(--text-muted); }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+        .btn-cancel {
+            height: 40px; padding: 0 18px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+            background: transparent; color: var(--text-secondary); font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .btn-cancel:hover { background: var(--surface-hover); }
+
+        .btn-submit {
+            height: 40px; padding: 0 22px; border-radius: var(--radius-pill); border: none;
+            background: var(--danger); color: white; font-size: 0.875rem; font-family: inherit; font-weight: 600;
+            cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(230,59,43,0.25);
+        }
+        .btn-submit:hover { background: #c42d1e; transform: translateY(-1px); }
+
+        /* VALIDATION */
+        .form-control.error { border-color: var(--danger); background: var(--danger-light); }
+        .field-error {
+            font-size: 0.75rem; color: var(--danger); font-weight: 600;
+            margin-top: 5px; display: none; align-items: center; gap: 4px;
+        }
+        .field-error.show { display: flex; }
+
+        /* LOGIN PROMPT */
+        .login-prompt { text-align: center; padding: 24px 0 8px; }
+        .login-prompt-icon {
+            width: 48px; height: 48px; border-radius: 50%; background: var(--accent-light); margin: 0 auto 14px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+        }
+        .login-prompt h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+        .login-prompt p { font-size: 0.84rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.55; }
+        .btn-go-login {
+            display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 24px;
+            border-radius: var(--radius-pill); border: none; background: var(--accent); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.15s;
+            box-shadow: 0 2px 8px rgba(43,92,230,0.3);
+        }
+        .btn-go-login:hover { background: #2250cc; transform: translateY(-1px); }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CONFIRM MODAL */
+        .confirm-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(15,15,15,0.55);
+            backdrop-filter: blur(4px); z-index: 300; align-items: center; justify-content: center; padding: 24px;
+        }
+        .confirm-overlay.open { display: flex; }
+        .confirm-box {
+            background: var(--surface); border-radius: 18px; box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            width: 100%; max-width: 380px; padding: 32px 28px 24px; text-align: center; animation: modalIn 0.2s ease both;
+        }
+        .confirm-icon {
+            width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; font-size: 1.4rem;
+        }
+        .confirm-icon.warn  { background: var(--danger-light); }
+        .confirm-icon.info  { background: var(--accent-light); }
+        .confirm-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 8px; }
+        .confirm-desc { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
+        .confirm-actions { display: flex; gap: 10px; }
+        .confirm-btn { flex: 1; height: 42px; border-radius: var(--radius-pill); border: none; font-size: 0.875rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        .confirm-btn.cancel { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+        .confirm-btn.cancel:hover { background: var(--surface-hover); }
+        .confirm-btn.danger { background: var(--danger); color: white; box-shadow: 0 2px 8px rgba(230,59,43,0.25); }
+        .confirm-btn.danger:hover { background: #c42d1e; transform: translateY(-1px); }
+        .confirm-btn.primary { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(43,92,230,0.25); }
+        .confirm-btn.primary:hover { background: #2250cc; transform: translateY(-1px); }
+
+        .issue-card:nth-child(1) { animation-delay: 0.10s; }
+        .issue-card:nth-child(2) { animation-delay: 0.16s; }
+        .issue-card:nth-child(3) { animation-delay: 0.22s; }
+        .issue-card:nth-child(4) { animation-delay: 0.28s; }
+        .issue-card:nth-child(5) { animation-delay: 0.34s; }
+        .issue-card:nth-child(6) { animation-delay: 0.40s; }
+
+        /* ═══ BACKGROUND BUBBLES ═══ */
+        .bubbles-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .bubbles-bg::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle, #C4C0B8 1px, transparent 1px); background-size: 30px 30px; opacity: 0.3; }
+        .bubble { position: absolute; border-radius: 50%; pointer-events: none; animation: bubbleFloat linear infinite; background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), rgba(43,92,230,0.06)); border: 1px solid rgba(43,92,230,0.08); }
+        @keyframes bubbleFloat { 0%   { transform: translateY(0) scale(1);   opacity: 0; } 10%  { opacity: 1; } 90%  { opacity: 0.6; } 100% { transform: translateY(-110vh) scale(1.1); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="bubbles-bg"></div>
+    <div class="bubble" style="width:28px;height:28px;left:5%;bottom:-60px;animation-duration:18s;animation-delay:0s;"></div>
+    <div class="bubble" style="width:40px;height:40px;left:12%;bottom:-60px;animation-duration:22s;animation-delay:3s;"></div>
+    <div class="bubble" style="width:20px;height:20px;left:22%;bottom:-60px;animation-duration:16s;animation-delay:6s;"></div>
+
+    <header class="navbar">
+        <a href="{% url 'homepage' %}" class="navbar-brand">
+            <span class="navbar-brand-dot"></span>ProbleminUni
+        </a>
+        <div class="navbar-right">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="user-chip">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>{{ user.username }}
+                </a>
+                <button onclick="openConfirm('logout')" class="btn btn-logout">ออกจากระบบ</button>
+                <a id="logout-link" href="{% url 'logout' %}" style="display:none;"></a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-login">เข้าสู่ระบบ</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="page-header">
+            <h1>ปัญหาในมหาลัยที่รายงานล่าสุด</h1>
+            <p>ติดตามและจัดการปัญหาทั้งหมดภายในมหาวิทยาลัย</p>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span class="header-stat-num">{{ issues|length }}</span>
+                    <span class="header-stat-label">ปัญหาทั้งหมด</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <form method="GET" action="{% url 'homepage' %}" style="display:flex;gap:8px;flex:1;min-width:220px;">
+                <input type="hidden" name="status" value="{{ request.GET.status }}">
+                <div class="search-wrap">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" name="search" class="search-input" placeholder="ค้นหาปัญหา หรือ สถานที่..." value="{{ request.GET.search }}">
+                </div>
+                <button type="submit" class="btn-search">ค้นหา</button>
+            </form>
+            <button onclick="openConfirm('report')" class="btn-report">แจ้งปัญหา</button>
+        </div>
+
+        <section class="cards-grid">
+            {% for issue in issues %}
+                <a href="{% url 'issue_detail' issue.id %}" style="text-decoration:none;color:inherit;display:block;">
+                <div class="issue-card status-{{ issue.status }}" style="cursor:pointer;">
+                    {% if issue.image %}
+                    <div class="card-image"><img src="{{ issue.image.url }}" alt="รูปปัญหา"></div>
+                    {% else %}
+                    <div class="card-image card-image-placeholder"><span>ไม่มีรูปภาพ</span></div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h3 class="card-title">{{ issue.description }}</h3>
+                        <div class="card-footer">
+                            <div class="card-location">{{ issue.location }}</div>
+                            <div class="card-author">{{ issue.reporter.username }}</div>
+                        </div>
+                    </div>
+                </div>
+                </a>
+            {% empty %}
+                <div class="empty-state"><p>ตอนนี้ยังไม่มีปัญหาที่ถูกรายงานในมหาลัย</p></div>
+            {% endfor %}
+        </section>
+    </main>
+
+    <!-- Modal รายงานปัญหา (ลบ 3D Model ออกไปก่อนตามที่ตกลง) -->
+    <div id="reportModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="modal">
+            <button class="modal-close" onclick="document.getElementById('reportModal').classList.remove('open')">✕</button>
+
+            {% if user.is_authenticated %}
+                <h2>รายงานปัญหา 📝</h2>
+                <form id="reportForm" action="{% url 'report_issue' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="description">ปัญหาที่พบเจอ <span style="color:var(--danger)">*</span></label>
+                        <textarea id="description" name="description" rows="2" class="form-control" placeholder="เช่น ฝาชักโครกในห้องน้ำชำรุด"></textarea>
+                        <div class="field-error" id="err-description">⚠ กรุณาระบุรายละเอียดปัญหา</div>
+                    </div>
+
+                    <!-- เหลือไว้แค่ Dropdown เลือกโซนสถานที่ เพื่อเก็บเป็นหมวดหมู่ (แทนการปักหมุด) -->
+                    <div class="form-group">
+                        <label class="form-label" for="zone_select">เลือกโซนอาคาร/ชั้น <span style="color:var(--danger)">*</span></label>
+                        <select id="zone_select" name="zone" class="form-control">
+                            <option value="" disabled selected>-- เลือกอาคาร / ชั้น --</option>
+                            <option value="archif1">คณะสถาปัตยกรรม ชั้น 1</option>
+                            <option value="archif2">คณะสถาปัตยกรรม ชั้น 2</option>
+                            <option value="archif3">คณะสถาปัตยกรรม ชั้น 3</option>
+                            <option value="archif4">คณะสถาปัตยกรรม ชั้น 4</option>
+                            <option value="archif5">คณะสถาปัตยกรรม ชั้น 5</option>
+                            <option value="archif6">คณะสถาปัตยกรรม ชั้น 6</option>
+                            <option value="outdoor81">ลานหน้าตึก 81</option>
+                        </select>
+                        <div class="field-error" id="err-zone">⚠ กรุณาเลือกโซนอาคาร</div>
+                    </div>
+
+                    <!-- รายละเอียดสถานที่ย่อย -->
+                    <div class="form-group">
+                        <label class="form-label" for="location">รายละเอียดจุดเกิดเหตุ <span style="color:var(--danger)">*</span></label>
+                        <input type="text" id="location" name="location" class="form-control" placeholder="เช่น หน้าห้องน้ำชาย หรือ ห้อง 412">
+                        <div class="field-error" id="err-location">⚠ กรุณาระบุรายละเอียดจุดเกิดเหตุ</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="category">ประเภทปัญหา <span style="color:var(--danger)">*</span></label>
+                        <select id="category" name="category" class="form-control">
+                            <option value="" disabled selected>เลือกหมวดหมู่</option>
+                            {% for value, label in category_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="field-error" id="err-category">⚠ กรุณาเลือกหมวดหมู่</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="image">รูปภาพประกอบ (ถ้ามี)</label>
+                        <input type="file" id="image" name="image" class="form-control" accept="image/*" style="padding: 7px 14px;">
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="document.getElementById('reportModal').classList.remove('open')">ยกเลิก</button>
+                        <button type="button" onclick="validateAndConfirm()" class="btn-submit">ส่งรายงาน</button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="login-prompt">
+                    <div class="login-prompt-icon">🔒</div>
+                    <h3>กรุณาเข้าสู่ระบบก่อน</h3>
+                    <p>คุณต้องเข้าสู่ระบบด้วยบัญชีมหาวิทยาลัยก่อน<br>จึงจะสามารถแจ้งปัญหาได้</p>
+                    <a href="{% url 'login' %}" class="btn-go-login">เข้าสู่ระบบ</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="confirm-overlay" onclick="if(event.target===this) closeConfirm()">
+        <div class="confirm-box">
+            <div class="confirm-icon warn" id="confirm-icon">⚠️</div>
+            <div class="confirm-title" id="confirm-title">ยืนยันการดำเนินการ</div>
+            <div class="confirm-desc" id="confirm-desc">คุณแน่ใจหรือไม่?</div>
+            <div class="confirm-actions">
+                <button class="confirm-btn cancel" onclick="closeConfirm()">ยกเลิก</button>
+                <button class="confirm-btn danger" id="confirm-ok-btn" onclick="confirmAction()">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let _confirmType = null;
+        let _reportFormEl = null;
+
+        const confirmConfigs = {
+            logout: { icon: '👋', iconClass: 'warn', title: 'ออกจากระบบ?', desc: 'คุณต้องการออกจากระบบใช่ไหม? จะต้องเข้าสู่ระบบใหม่อีกครั้ง', okText: 'ออกจากระบบ', okClass: 'danger' },
+            report: { icon: '📋', iconClass: 'info', title: 'แจ้งปัญหาใหม่?', desc: 'คุณต้องการเปิดฟอร์มเพื่อแจ้งปัญหาใหม่ใช่ไหม?', okText: 'เปิดฟอร์ม', okClass: 'primary' },
+            submit: { icon: '📤', iconClass: 'info', title: 'ส่งรายงานปัญหา?', desc: 'ตรวจสอบข้อมูลให้ถูกต้องก่อนส่ง จะไม่สามารถแก้ไขได้หลังจากส่งแล้ว', okText: 'ส่งรายงาน', okClass: 'primary' }
+        };
+
+        function validateAndConfirm() {
+            const desc = document.getElementById('description');
+            const zone = document.getElementById('zone_select');
+            const loc = document.getElementById('location');
+            const cat = document.getElementById('category');
+
+            let valid = true;
+
+            ['description', 'zone_select', 'location', 'category'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('error');
+            });
+            document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
+
+            if (!desc.value.trim()) {
+                desc.classList.add('error');
+                document.getElementById('err-description').classList.add('show');
+                valid = false;
+            }
+            if (!zone.value) {
+                zone.classList.add('error');
+                document.getElementById('err-zone').classList.add('show');
+                valid = false;
+            }
+            if (!loc.value.trim()) {
+                loc.classList.add('error');
+                document.getElementById('err-location').classList.add('show');
+                valid = false;
+            }
+            if (!cat.value) {
+                cat.classList.add('error');
+                document.getElementById('err-category').classList.add('show');
+                valid = false;
+            }
+
+            if (valid) openConfirm('submit');
+        }
+
+        function openConfirm(type, formEl) {
+            _confirmType = type;
+            _reportFormEl = formEl || null;
+            const cfg = confirmConfigs[type];
+            document.getElementById('confirm-icon').textContent = cfg.icon;
+            document.getElementById('confirm-icon').className = 'confirm-icon ' + cfg.iconClass;
+            document.getElementById('confirm-title').textContent = cfg.title;
+            document.getElementById('confirm-desc').textContent = cfg.desc;
+            const okBtn = document.getElementById('confirm-ok-btn');
+            okBtn.textContent = cfg.okText;
+            okBtn.className = 'confirm-btn ' + cfg.okClass;
+            document.getElementById('confirmModal').classList.add('open');
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirmModal').classList.remove('open');
+            _confirmType = null;
+        }
+
+        function confirmAction() {
+            if (_confirmType === 'logout') {
+                document.getElementById('logout-link').click();
+            } else if (_confirmType === 'report') {
+                closeConfirm();
+                document.getElementById('reportModal').classList.add('open');
+            } else if (_confirmType === 'submit') {
+                closeConfirm();
+                document.getElementById('reportForm').submit();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            ['description', 'zone_select', 'location', 'category'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const eventName = el.tagName === 'SELECT' ? 'change' : 'input';
+                    el.addEventListener(eventName, function() {
+                        this.classList.remove('error');
+                        const err = document.getElementById('err-' + (id === 'zone_select' ? 'zone' : id));
+                        if (err) err.classList.remove('show');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

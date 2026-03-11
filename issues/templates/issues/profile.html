@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --surface-hover: #F0EEE9;
+            --border: #E8E5DF;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --accent-light: #EEF2FD;
+            --danger: #E63B2B;
+            --danger-light: #FEF0EE;
+            --success: #1C9E6B;
+            --success-light: #EAF7F2;
+            --warning: #D4870A;
+            --warning-light: #FEF5E7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 16px 40px rgba(0,0,0,0.1);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+        }
+
+        html, body { height: 100%; }
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            display: flex; flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+        .main { flex: 1; display: flex; flex-direction: column; }
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(247,246,243,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+            padding: 0 32px; height: 62px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .navbar-brand {
+            font-weight: 700; font-size: 1.15rem; color: var(--accent);
+            letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; text-decoration: none;
+        }
+        .navbar-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+        .user-chip {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 14px 6px 8px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill);
+            font-size: 0.82rem; color: var(--text-secondary); font-weight: 500;
+            box-shadow: var(--shadow-sm); text-decoration: none; transition: all 0.15s;
+        }
+        .user-chip:hover { background: var(--surface-hover); }
+        .user-avatar {
+            width: 26px; height: 26px; border-radius: 50%; background: var(--accent);
+            color: white; font-size: 0.65rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            height: 38px; padding: 0 16px; border-radius: var(--radius-pill);
+            border: none; cursor: pointer; font-size: 0.84rem;
+            font-family: inherit; font-weight: 600; transition: all 0.15s;
+            text-decoration: none;
+        }
+        .btn-logout { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+        .btn-login { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(43,92,230,0.3); }
+        .btn-login:hover { background: #2250cc; transform: translateY(-1px); }
+
+        /* MAIN */
+        .main-inner { max-width: 1200px; margin: 0 auto; padding: 40px 40px 80px; width: 100%; position: relative; z-index: 1; }
+
+        /* PROFILE HEADER */
+        .profile-header {
+            display: flex; align-items: center; gap: 24px;
+            margin-bottom: 28px;
+            padding: 32px 40px;
+            background: linear-gradient(130deg, #2B5CE6 0%, #1836a8 100%);
+            border-radius: 22px;
+            position: relative; overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+        }
+        .profile-header::after {
+            content: '';
+            position: absolute; top: -50px; right: -50px;
+            width: 220px; height: 220px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); pointer-events: none;
+        }
+        .profile-header::before {
+            content: '';
+            position: absolute; bottom: -70px; left: 30%;
+            width: 280px; height: 280px; border-radius: 50%;
+            background: rgba(255,255,255,0.04); pointer-events: none;
+        }
+        .profile-big-avatar {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: 3px solid rgba(255,255,255,0.4);
+            color: white; font-size: 1.6rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .profile-info { position: relative; }
+        .profile-info h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; color: white; }
+        .profile-info p { font-size: 0.875rem; color: rgba(255,255,255,0.7); }
+        .profile-stats {
+            display: flex; gap: 12px; margin-top: 18px; position: relative;
+        }
+        .profile-stat {
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 12px; padding: 10px 18px;
+            min-width: 80px;
+        }
+        .profile-stat-num { font-size: 1.4rem; font-weight: 800; color: white; line-height: 1; }
+        .profile-stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-top: 3px; font-weight: 500; }
+
+        /* SECTION */
+        .section-label {
+            font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            margin-bottom: 16px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            animation: fadeUp 0.4s 0.08s ease both;
+        }
+
+        /* CARDS GRID */
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;
+        }
+        .cards-grid > a { display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+
+        .issue-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 18px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+            display: flex; flex-direction: column; gap: 0;
+            transition: all 0.22s cubic-bezier(.25,.8,.25,1); position: relative;
+            animation: fadeUp 0.4s ease both;
+            flex: 1; height: 100%; isolation: isolate;
+        }
+        .card-image { width: 100%; height: 160px; overflow: hidden; flex-shrink: 0; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .issue-card:hover .card-image img { transform: scale(1.04); }
+        .card-image-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+            background: linear-gradient(145deg, #eeebe5 0%, #e3dfd7 100%); height: 160px;
+        }
+        .card-image-placeholder span { font-size: 0.7rem; color: #B8B3AB; font-weight: 600; letter-spacing: 0.04em; }
+        .card-inner { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+        .issue-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; z-index: 1;
+        }
+        .issue-card.status-pending::before    { background: var(--warning); }
+        .issue-card.status-in_progress::before { background: var(--accent); }
+        .issue-card.status-resolved::before   { background: var(--success); }
+        .issue-card.status-rejected::before   { background: var(--danger); }
+        .issue-card:hover { box-shadow: 0 16px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.05); transform: translateY(-4px); border-color: #C8C4BD; }
+
+        .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: var(--radius-pill);
+            font-size: 0.72rem; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        .badge-pending    { background: var(--warning-light); color: var(--warning); }
+        .badge-pending .badge-dot { background: var(--warning); }
+        .badge-in_progress { background: var(--accent-light); color: var(--accent); }
+        .badge-in_progress .badge-dot { background: var(--accent); animation: pulseDot 1.5s infinite; }
+        .badge-resolved   { background: var(--success-light); color: var(--success); }
+        .badge-resolved .badge-dot { background: var(--success); }
+        .badge-rejected   { background: var(--danger-light); color: var(--danger); }
+        .badge-rejected .badge-dot { background: var(--danger); }
+
+        @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+
+        .card-date { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+        .card-title { font-size: 0.975rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.45; }
+
+        .rejection-box { background: var(--danger-light); border: 1px solid #fad4d0; border-radius: var(--radius-sm); padding: 10px 12px; }
+        .rejection-label { font-size: 0.72rem; font-weight: 700; color: var(--danger); margin-bottom: 3px; }
+        .rejection-text { font-size: 0.82rem; color: #b02d20; }
+
+        .card-location { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--text-muted); }
+
+        .empty-state {
+            grid-column: 1/-1; text-align: center;
+            padding: 64px 0; background: var(--surface);
+            border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+        }
+        .empty-state p { color: var(--text-muted); font-size: 0.925rem; }
+
+        /* LOGIN PAGE (unauthenticated) */
+        .auth-page {
+            flex: 1;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-page::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, #C8C4BD 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        .auth-page-gradient {
+            position: absolute; inset: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse at 10% 50%, rgba(43,92,230,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 20%, rgba(43,92,230,0.06) 0%, transparent 50%);
+        }
+        /* floating decorations */
+        .auth-page::after {
+            content: '';
+            position: absolute; bottom: -80px; right: -80px;
+            width: 320px; height: 320px; border-radius: 50%;
+            background: rgba(43,92,230,0.06);
+            pointer-events: none;
+        }
+        .auth-dots {
+            position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+        }
+        .auth-dots::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, #C8C4BD 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.4;
+        }
+        .auth-shape {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            animation: floatShape 8s ease-in-out infinite;
+        }
+        .auth-shape-1 { width: 48px; height: 48px; top: 8%; left: 4%; background: rgba(43,92,230,0.07); animation-delay: 0s; }
+        .auth-shape-2 { width: 32px; height: 32px; bottom: 10%; left: 4%; background: rgba(43,92,230,0.09); animation-delay: 2s; top: auto; }
+        .auth-shape-3 { width: 64px; height: 64px; top: 12%; right: 5%; background: rgba(43,92,230,0.05); animation-delay: 1s; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+        .auth-shape-4 { width: 40px; height: 40px; bottom: 12%; right: 5%; background: rgba(43,92,230,0.08); animation-delay: 3s; }
+        @keyframes floatShape {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-16px) rotate(8deg); }
+        }
+        .auth-container {
+            max-width: 960px; width: 100%; margin: 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+            display: flex;
+            animation: fadeUp 0.4s ease both;
+            position: relative;
+        }
+
+        .auth-left {
+            width: 46%;
+            background: linear-gradient(145deg, #2B5CE6 0%, #1836a8 100%);
+            padding: 64px 52px;
+            display: flex; flex-direction: column; justify-content: center;
+            color: white;
+            position: relative; overflow: hidden;
+        }
+        .auth-left::before {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 220px; height: 220px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); pointer-events: none;
+        }
+        .auth-left::after {
+            content: '';
+            position: absolute; bottom: -80px; left: -40px;
+            width: 260px; height: 260px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); pointer-events: none;
+        }
+        .auth-left h2 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 10px; position: relative; }
+        .auth-left p { font-size: 0.875rem; line-height: 1.7; opacity: 0.8; margin-bottom: 28px; position: relative; }
+        .auth-features { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; position: relative; }
+        .auth-feature {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.84rem; color: rgba(255,255,255,0.85);
+        }
+        .auth-feature-icon {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; flex-shrink: 0;
+        }
+        .btn-register {
+            display: block; text-align: center;
+            padding: 12px 24px; border-radius: var(--radius-pill);
+            background: white; color: var(--accent);
+            font-weight: 700; font-size: 0.9rem;
+            text-decoration: none; transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+
+        .auth-right {
+            flex: 1; padding: 64px 52px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .auth-right h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 28px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; }
+        .form-control {
+            width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 12px 16px; font-size: 0.925rem; font-family: inherit;
+            color: var(--text-primary); background: var(--bg); outline: none; transition: all 0.2s;
+        }
+        .form-control:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(43,92,230,0.08); }
+
+        .btn-submit-login {
+            width: 100%; height: 50px; margin-top: 12px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--text-primary); color: white;
+            font-size: 0.9rem; font-family: inherit; font-weight: 700;
+            cursor: pointer; transition: all 0.15s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .btn-submit-login:hover { background: #2d2a25; transform: translateY(-1px); }
+
+        .alert-error {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: #FEF0EE; border: 1px solid #fad4d0;
+            border-left: 4px solid var(--danger);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            font-size: 0.84rem; color: #b02d20; font-weight: 500;
+            animation: fadeUp 0.3s ease both;
+        }
+        .alert-error-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .alert-error-text { line-height: 1.5; }
+        .alert-error-text strong { display: block; font-weight: 700; margin-bottom: 2px; }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        /* NOTIFICATIONS SECTION */
+        .notif-section { margin-bottom: 40px; animation: fadeUp 0.4s 0.04s ease both; }
+        .notif-empty { text-align: center; padding: 28px; color: var(--text-muted); font-size: 0.875rem;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+        .notif-list { display: flex; flex-direction: column; gap: 8px; }
+        .notif-item {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 18px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); box-shadow: var(--shadow-sm);
+            text-decoration: none; color: inherit;
+            transition: all 0.15s;
+        }
+        .notif-item:hover { background: var(--surface-hover); border-color: #D8D4CD; transform: translateX(2px); }
+        .notif-item.unread { border-left: 3px solid var(--accent); background: var(--accent-light); }
+        .notif-dot {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--accent-light); color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 1rem;
+        }
+        .notif-item.unread .notif-dot { background: var(--accent); color: white; }
+        .notif-content { flex: 1; min-width: 0; }
+        .notif-msg { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 3px; }
+        .notif-time { font-size: 0.75rem; color: var(--text-muted); }
+        .notif-arrow { color: var(--text-muted); flex-shrink: 0; align-self: center; }
+        .issue-card:nth-child(1){animation-delay:0.10s}
+        .issue-card:nth-child(2){animation-delay:0.16s}
+        .issue-card:nth-child(3){animation-delay:0.22s}
+        .issue-card:nth-child(4){animation-delay:0.28s}
+
+        @media (max-width: 640px) {
+            .auth-container { flex-direction: column; }
+            .auth-left { width: 100%; padding: 36px 28px; }
+            .auth-right { padding: 36px 28px; }
+        }
+
+        /* CONFIRM MODAL */
+        .confirm-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,15,15,0.55);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 300; align-items: center; justify-content: center; padding: 24px;
+        }
+        .confirm-overlay.open { display: flex; }
+        .confirm-box {
+            background: var(--surface); border-radius: 18px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            width: 100%; max-width: 380px;
+            padding: 32px 28px 24px; text-align: center;
+            animation: confirmIn 0.2s ease both;
+        }
+        @keyframes confirmIn { from{opacity:0;transform:scale(0.94) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        .confirm-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.4rem; }
+        .confirm-icon.warn  { background: var(--danger-light); }
+        .confirm-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 8px; }
+        .confirm-desc { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
+        .confirm-actions { display: flex; gap: 10px; }
+        .confirm-btn { flex: 1; height: 42px; border-radius: var(--radius-pill); border: none; font-size: 0.875rem; font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        .confirm-btn.cancel { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+        .confirm-btn.cancel:hover { background: var(--surface-hover); }
+        .confirm-btn.danger { background: var(--danger); color: white; box-shadow: 0 2px 8px rgba(230,59,43,0.25); }
+        .confirm-btn.danger:hover { background: #c42d1e; transform: translateY(-1px); }
+
+        /* NOTIFICATION BELL */
+        .notif-btn {
+            position: relative;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.15s;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        .notif-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+        .notif-badge {
+            position: absolute; top: -3px; right: -3px;
+            min-width: 18px; height: 18px;
+            background: var(--danger); color: white;
+            font-size: 0.6rem; font-weight: 700;
+            border-radius: var(--radius-pill);
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px;
+            border: 2px solid var(--bg);
+            animation: popIn 0.3s ease both;
+        }
+        @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
+
+        /* ═══ BACKGROUND BUBBLES ═══ */
+        .bubbles-bg {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .bubbles-bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, #C4C0B8 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3;
+        }
+        .bubble {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            animation: bubbleFloat linear infinite;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), rgba(43,92,230,0.06));
+            border: 1px solid rgba(43,92,230,0.08);
+        }
+        @keyframes bubbleFloat {
+            0%   { transform: translateY(0) scale(1);   opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="bubbles-bg"></div>
+    <div class="bubble" style="width:28px;height:28px;left:5%;bottom:-60px;animation-duration:18s;animation-delay:0s;"></div>
+    <div class="bubble" style="width:40px;height:40px;left:12%;bottom:-60px;animation-duration:22s;animation-delay:3s;"></div>
+    <div class="bubble" style="width:20px;height:20px;left:22%;bottom:-60px;animation-duration:16s;animation-delay:6s;"></div>
+    <div class="bubble" style="width:56px;height:56px;left:35%;bottom:-60px;animation-duration:25s;animation-delay:1.5s;"></div>
+    <div class="bubble" style="width:36px;height:36px;left:48%;bottom:-60px;animation-duration:20s;animation-delay:8s;"></div>
+    <div class="bubble" style="width:24px;height:24px;left:58%;bottom:-60px;animation-duration:17s;animation-delay:4.5s;"></div>
+    <div class="bubble" style="width:48px;height:48px;left:67%;bottom:-60px;animation-duration:23s;animation-delay:2s;"></div>
+    <div class="bubble" style="width:32px;height:32px;left:75%;bottom:-60px;animation-duration:19s;animation-delay:7s;"></div>
+    <div class="bubble" style="width:44px;height:44px;left:82%;bottom:-60px;animation-duration:21s;animation-delay:0.5s;"></div>
+    <div class="bubble" style="width:22px;height:22px;left:90%;bottom:-60px;animation-duration:15s;animation-delay:5.5s;"></div>
+    <div class="bubble" style="width:38px;height:38px;left:42%;bottom:-60px;animation-duration:24s;animation-delay:9s;"></div>
+    <div class="bubble" style="width:52px;height:52px;left:18%;bottom:-60px;animation-duration:26s;animation-delay:3.5s;"></div>
+
+    <header class="navbar">
+        <a href="{% url 'homepage' %}" class="navbar-brand">
+            <span class="navbar-brand-dot"></span>
+            ProbleminUni
+        </a>
+        <div class="navbar-right">
+            {% if user.is_authenticated %}
+                <div class="user-chip">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>
+                    {{ user.username }}
+                </div>
+                <button onclick="openLogoutConfirm()" class="btn btn-logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    ออกจากระบบ
+                </button>
+                <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display:none;">{% csrf_token %}</form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-login">เข้าสู่ระบบ</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main">
+
+        {% if user.is_authenticated %}
+            <div class="main-inner"><div class="profile-header">
+                <div class="profile-big-avatar">{{ user.username|first|upper }}</div>
+                <div class="profile-info">
+                    <h1>สวัสดี, {{ user.username }}</h1>
+                    <p>ปัญหาทั้งหมดที่คุณได้รายงานไว้</p>
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <span class="profile-stat-num">{{ user_issues|length }}</span>
+                            <span class="profile-stat-label">รายงานทั้งหมด</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-label">รายงานของคุณ</div>
+
+            <section class="cards-grid">
+                {% for issue in user_issues %}
+                    <a href="{% url 'issue_detail' issue.id %}" style="text-decoration:none;color:inherit;">
+                    <div class="issue-card status-{{ issue.status }}">
+                        {% if issue.image %}
+                        <div class="card-image">
+                            <img src="{{ issue.image.url }}" alt="รูปปัญหา">
+                        </div>
+                        {% else %}
+                        <div class="card-image-placeholder">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C0BBB3" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <span>ไม่มีรูปภาพ</span>
+                        </div>
+                        {% endif %}
+                        <div class="card-inner">
+                            <div class="card-top">
+                                <span class="badge badge-{{ issue.status }}">
+                                    <span class="badge-dot"></span>
+                                    {{ issue.get_status_display }}
+                                </span>
+                                <span class="card-date">{{ issue.created_at|date:"d M Y" }}</span>
+                            </div>
+                            <div class="card-title">{{ issue.description }}</div>
+                            {% if issue.category %}
+                            <div style="display:inline-flex;align-items:center;font-size:0.71rem;font-weight:600;color:var(--text-secondary);background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:2px 10px;width:fit-content;">{{ issue.get_category_display }}</div>
+                            {% endif %}
+                            {% if issue.status == 'rejected' and issue.rejection_reason %}
+                            <div class="rejection-box">
+                                <p class="rejection-label">เหตุผลที่ปฏิเสธ</p>
+                                <p class="rejection-text">{{ issue.rejection_reason }}</p>
+                            </div>
+                            {% endif %}
+                            <div class="card-location">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {{ issue.location }}
+                            </div>
+                        </div>
+                    </div>
+                    </a>
+                {% empty %}
+                    <div class="empty-state">
+                        <p>คุณยังไม่เคยรายงานปัญหาใดๆ</p>
+                    </div>
+                {% endfor %}
+            </section>
+
+            </div><!-- /main-inner -->
+        {% else %}
+            <div class="auth-page">
+            <div class="auth-page-gradient"></div>
+            <div class="auth-dots"></div>
+            <div class="auth-shape auth-shape-1"></div>
+            <div class="auth-shape auth-shape-2"></div>
+            <div class="auth-shape auth-shape-3"></div>
+            <div class="auth-shape auth-shape-4"></div>
+            <div class="auth-container">
+                <div class="auth-left">
+                    <h2>ผู้ใช้ใหม่ใช่ไหม?</h2>
+                    <p>สมัครสมาชิกเพื่อเริ่มต้นรายงานปัญหาที่พบเจอในมหาวิทยาลัย และติดตามสถานะการแก้ไข</p>
+                    <div class="auth-features">
+                        <div class="auth-feature">
+                            <div class="auth-feature-icon">📋</div>
+                            <span>แจ้งปัญหาได้ง่ายๆ พร้อมรูปภาพ</span>
+                        </div>
+                        <div class="auth-feature">
+                            <div class="auth-feature-icon">📊</div>
+                            <span>ติดตามความคืบหน้าแบบ real-time</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'register' %}" class="btn-register">สมัครสมาชิก (Register)</a>
+                </div>
+                <div class="auth-right">
+                    <h2>เข้าสู่ระบบ</h2>
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert-error">
+                            <span class="alert-error-icon">⚠️</span>
+                            <div class="alert-error-text">
+                                <strong>เข้าสู่ระบบไม่สำเร็จ</strong>
+                                {{ message }}
+                                {% if 'ไม่ถูกต้อง' in message.tags or 'error' in message.tags %}
+                                <span style="display:block;margin-top:6px;font-size:0.8rem;color:#b02d20;">
+                                    ยังไม่มีบัญชี? <a href="{% url 'register' %}" style="color:var(--accent);font-weight:700;text-decoration:underline;">สมัครสมาชิกที่นี่</a>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    <form action="{% url 'login' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label">ชื่อผู้ใช้ (Username)</label>
+                            <input type="text" name="username" class="form-control" placeholder="กรอก username ของคุณ">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">รหัสผ่าน (Password)</label>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="btn-submit-login">เข้าสู่ระบบ</button>
+                    </form>
+                </div>
+            </div>
+            </div>
+        {% endif %}
+
+    </main>
+
+
+    <!-- CONFIRM MODAL -->
+    <div id="confirmModal" class="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
+        <div class="confirm-box">
+            <div class="confirm-icon warn">👋</div>
+            <div class="confirm-title">ออกจากระบบ?</div>
+            <div class="confirm-desc">คุณต้องการออกจากระบบใช่ไหม? จะต้องเข้าสู่ระบบใหม่อีกครั้ง</div>
+            <div class="confirm-actions">
+                <button class="confirm-btn cancel" onclick="closeConfirm()">ยกเลิก</button>
+                <button class="confirm-btn danger" onclick="document.getElementById('logout-form').submit()">ออกจากระบบ</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openLogoutConfirm() { document.getElementById('confirmModal').classList.add('open'); }
+        function closeConfirm() { document.getElementById('confirmModal').classList.remove('open'); }
+    </script>
+</body>
+</html>

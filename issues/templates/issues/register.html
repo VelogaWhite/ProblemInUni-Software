@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สมัครสมาชิก - ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --border: #E8E5DF;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --danger: #E63B2B;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden; /* ไม่ให้ scroll */
+        }
+
+        /* FULL PAGE LAYOUT */
+        .page {
+            height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            padding: 20px;
+        }
+
+        /* dot grid */
+        .page::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, #C8C4BD 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.35; pointer-events: none;
+        }
+
+        /* gradient blobs */
+        .page::after {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 10% 50%, rgba(43,92,230,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 20%, rgba(43,92,230,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 85%, rgba(43,92,230,0.05) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        /* floating shapes — เล็กลง อยู่ขอบ */
+        .shape {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            animation: floatShape 9s ease-in-out infinite;
+        }
+        .s1 { width: 48px; height: 48px; top: 8%;  left: 4%;  background: rgba(43,92,230,0.08); animation-delay: 0s; }
+        .s2 { width: 32px; height: 32px; bottom: 10%; left: 5%;  background: rgba(43,92,230,0.1);  animation-delay: 2s; }
+        .s3 { width: 64px; height: 64px; top: 12%; right: 5%; background: rgba(43,92,230,0.06); animation-delay: 1s; border-radius: 30% 70% 60% 40%/40% 30% 70% 60%; }
+        .s4 { width: 40px; height: 40px; bottom: 12%; right: 5%; background: rgba(43,92,230,0.09); animation-delay: 3s; }
+        @keyframes floatShape {
+            0%,100% { transform: translateY(0) rotate(0deg); }
+            50%      { transform: translateY(-12px) rotate(6deg); }
+        }
+
+        /* CARD */
+        .card {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 860px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+            display: flex;
+            animation: fadeUp 0.35s ease both;
+        }
+
+        /* LEFT */
+        .panel-left {
+            width: 40%; flex-shrink: 0;
+            background: linear-gradient(145deg, #2B5CE6 0%, #1836a8 100%);
+            padding: 40px 36px;
+            display: flex; flex-direction: column; justify-content: center;
+            color: white; position: relative; overflow: hidden;
+        }
+        .panel-left::before {
+            content: ''; position: absolute; top: -50px; right: -50px;
+            width: 180px; height: 180px; border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+        }
+        .panel-left::after {
+            content: ''; position: absolute; bottom: -70px; left: -30px;
+            width: 220px; height: 220px; border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+        .brand {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 1rem; font-weight: 700; color: rgba(255,255,255,0.9);
+            letter-spacing: -0.02em; text-decoration: none; margin-bottom: 28px;
+            position: relative;
+        }
+        .brand-dot { width: 7px; height: 7px; border-radius: 50%; background: white; }
+        .panel-left h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 8px; position: relative; }
+        .panel-left p  { font-size: 0.82rem; line-height: 1.65; color: rgba(255,255,255,0.72); margin-bottom: 24px; position: relative; }
+
+        .features { display: flex; flex-direction: column; gap: 11px; position: relative; }
+        .feature { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.88); }
+        .feature-icon {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; flex-shrink: 0;
+        }
+        .btn-login {
+            display: block; text-align: center; margin-top: 24px; position: relative;
+            padding: 10px 20px; border-radius: var(--radius-pill);
+            background: white; color: var(--accent);
+            font-weight: 700; font-size: 0.85rem; text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+
+        /* RIGHT */
+        .panel-right {
+            flex: 1; padding: 32px 36px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .panel-right h2 { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 3px; }
+        .panel-right > p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 18px; }
+
+        .form-group { margin-bottom: 10px; }
+        .form-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+        .form-control {
+            width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 8px 12px; font-size: 0.82rem; font-family: inherit;
+            color: var(--text-primary); background: var(--bg); outline: none; transition: all 0.2s;
+        }
+        .form-control:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(43,92,230,0.08); }
+
+        /* ซ่อน help text ที่ยาวเกิน */
+        .help-text { display: none; }
+        .error-text { font-size: 0.7rem; color: var(--danger); margin-top: 3px; }
+
+        .btn-submit {
+            width: 100%; height: 42px; margin-top: 6px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--accent); color: white;
+            font-size: 0.875rem; font-family: inherit; font-weight: 700;
+            cursor: pointer; transition: all 0.15s;
+            box-shadow: 0 2px 10px rgba(43,92,230,0.3);
+        }
+        .btn-submit:hover { background: #2250cc; transform: translateY(-1px); }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+        @media (max-width: 640px) {
+            html, body { overflow: auto; }
+            .page { height: auto; padding: 24px 16px; }
+            .card { flex-direction: column; }
+            .panel-left { width: 100%; padding: 28px 24px; }
+            .panel-right { padding: 28px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page">
+        <div class="shape s1"></div>
+        <div class="shape s2"></div>
+        <div class="shape s3"></div>
+        <div class="shape s4"></div>
+
+        <div class="card">
+            <!-- LEFT -->
+            <div class="panel-left">
+                <a href="{% url 'homepage' %}" class="brand">
+                    <span class="brand-dot"></span>
+                    ProbleminUni
+                </a>
+                <h2>ยินดีต้อนรับ!</h2>
+                <p>สมัครสมาชิกเพื่อเริ่มต้นรายงานปัญหาในมหาวิทยาลัย และติดตามสถานะการแก้ไข</p>
+                <div class="features">
+                    <div class="feature">
+                        <div class="feature-icon">📋</div>
+                        <span>แจ้งปัญหาได้ง่ายๆ พร้อมรูปภาพ</span>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">📊</div>
+                        <span>ติดตามความคืบหน้าแบบ real-time</span>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">🏫</div>
+                        <span>ร่วมพัฒนามหาวิทยาลัยไปด้วยกัน</span>
+                    </div>
+                </div>
+                <a href="{% url 'profile' %}" class="btn-login">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</a>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="panel-right">
+                <h2>สมัครสมาชิก</h2>
+                <p>กรอกข้อมูลด้านล่างเพื่อสร้างบัญชีใหม่</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <p class="help-text">{{ field.help_text|safe }}</p>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <p class="error-text">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn-submit">ยืนยันการสมัคร</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.classList.add('form-control');
+        });
+    </script>
+</body>
+</html>

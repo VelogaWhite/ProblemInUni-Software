@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แดชบอร์ดเจ้าหน้าที่ - ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --surface-hover: #F0EEE9;
+            --border: #E8E5DF;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --accent-light: #EEF2FD;
+            --danger: #E63B2B;
+            --danger-light: #FEF0EE;
+            --success: #1C9E6B;
+            --success-light: #EAF7F2;
+            --warning: #D4870A;
+            --warning-light: #FEF5E7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(247,246,243,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0 32px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .navbar-brand-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px 6px 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .user-chip:hover { border-color: #ccc; background: var(--surface-hover); }
+
+        .user-avatar {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--danger); /* สีต่างจาก User ปกติ */
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            height: 38px;
+            padding: 0 16px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.84rem;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.15s;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+
+        /* MAIN */
+        .main { max-width: 1200px; margin: 0 auto; padding: 44px 32px 80px; }
+
+        /* PAGE HEADER */
+        .page-header {
+            margin-bottom: 28px;
+            padding: 36px 44px;
+            background: linear-gradient(130deg, #1A1814 0%, #4A463F 100%); /* สีเข้มสำหรับ Admin/Staff */
+            border-radius: 22px;
+            position: relative; overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+            color: white;
+        }
+        .page-header::after {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 260px; height: 260px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); pointer-events: none;
+        }
+        .page-header::before {
+            content: '';
+            position: absolute; bottom: -80px; left: 25%;
+            width: 320px; height: 320px; border-radius: 50%;
+            background: rgba(255,255,255,0.04); pointer-events: none;
+        }
+        .page-header h1 {
+            font-size: 1.9rem; font-weight: 800;
+            letter-spacing: -0.03em; margin-bottom: 6px; position: relative;
+        }
+        .page-header p { color: rgba(255,255,255,0.7); font-size: 0.875rem; position: relative; }
+        
+        .header-stats {
+            display: flex; gap: 12px; margin-top: 22px; position: relative; flex-wrap: wrap;
+        }
+        .header-stat {
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 12px; padding: 10px 18px;
+            backdrop-filter: blur(8px); min-width: 90px;
+        }
+        .header-stat-num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+        .header-stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); margin-top: 3px; font-weight: 500; letter-spacing: 0.02em; }
+
+        /* FILTER TABS */
+        .filter-tabs {
+            display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px;
+            animation: fadeUp 0.4s 0.05s ease both;
+        }
+        .filter-tab {
+            padding: 8px 16px; border-radius: var(--radius-pill);
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;
+            text-decoration: none; white-space: nowrap; transition: all 0.2s;
+        }
+        .filter-tab:hover { background: var(--surface-hover); color: var(--text-primary); }
+        .filter-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* TABLE */
+        .table-container {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-sm); animation: fadeUp 0.4s 0.1s ease both;
+        }
+        .table { width: 100%; border-collapse: collapse; text-align: left; }
+        .table th {
+            padding: 16px 20px; background: var(--bg); border-bottom: 1px solid var(--border);
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .table td {
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            font-size: 0.85rem; color: var(--text-primary); vertical-align: middle;
+        }
+        .table tr:last-child td { border-bottom: none; }
+        .table tbody tr { transition: background 0.15s; cursor: pointer; }
+        .table tbody tr:hover { background: var(--surface-hover); }
+        
+        /* 🌟 ลิงก์ห่อหุ้มแถวตาราง 🌟 */
+        .table-row-link {
+            display: contents; /* ทำให้ <a> ไม่ทำลายโครงสร้างตาราง */
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: var(--radius-pill);
+            font-size: 0.7rem; font-weight: 700; white-space: nowrap;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        .badge-pending    { background: var(--warning-light); color: var(--warning); }
+        .badge-pending .badge-dot { background: var(--warning); }
+        .badge-in_progress { background: var(--accent-light); color: var(--accent); }
+        .badge-in_progress .badge-dot { background: var(--accent); animation: pulseDot 1.5s infinite; }
+        .badge-resolved   { background: var(--success-light); color: var(--success); }
+        .badge-resolved .badge-dot { background: var(--success); }
+        .badge-rejected   { background: var(--danger-light); color: var(--danger); }
+        .badge-rejected .badge-dot { background: var(--danger); }
+
+        @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+
+        .issue-desc { font-weight: 600; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .issue-loc { color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; }
+        .issue-date { color: var(--text-muted); font-size: 0.75rem; }
+
+        .btn-view {
+            display: inline-block; /* ทำให้ปุ่มคงขนาด */
+            white-space: nowrap; /* ป้องกันข้อความตกบรรทัด */
+            padding: 6px 12px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+            background: var(--surface); color: var(--text-secondary); font-size: 0.75rem; font-weight: 600;
+            text-decoration: none; transition: all 0.2s; pointer-events: none; /* ปิด pointer-events เพราะเราให้กดได้ทั้งแถวแล้ว */
+        }
+        .table tbody tr:hover .btn-view { background: var(--accent); color: white; border-color: var(--accent); }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        /* EMPTY */
+        .empty-state { text-align: center; padding: 60px 0; }
+        .empty-state p { color: var(--text-muted); font-size: 0.95rem; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="{% url 'homepage' %}" class="navbar-brand">
+            <span class="navbar-brand-dot" style="background:var(--danger);"></span>
+            ProbleminUni <span style="font-size: 0.8rem; color: var(--danger); font-weight: 600; border: 1px solid var(--danger); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">STAFF</span>
+        </a>
+        <div class="navbar-right">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="user-chip">
+                    <div class="user-avatar">S</div>
+                    {{ user.username }}
+                </a>
+                <a href="{% url 'logout' %}" class="btn-logout">ออกจากระบบ</a>
+                <!-- ปุ่มเครื่องมือหาพิกัด 3D -->
+                <a href="{% url 'coordinate_finder' %}" class="btn" style="background:var(--warning);color:white;">
+                    📍 เครื่องมือหาพิกัด 3D
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main">
+
+        <div class="page-header">
+            <h1>แดชบอร์ดจัดการปัญหา</h1>
+            <p>ระบบสำหรับเจ้าหน้าที่เพื่อติดตามและอัปเดตสถานะปัญหาภายในมหาวิทยาลัย</p>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span class="header-stat-num">{{ issues|length }}</span>
+                    <span class="header-stat-label">ปัญหาทั้งหมด</span>
+                </div>
+                <div class="header-stat" style="background: rgba(212,135,10,0.2); border-color: rgba(212,135,10,0.3);">
+                    <span class="header-stat-num" style="color: #FFB347;">{{ pending_count|default:"0" }}</span>
+                    <span class="header-stat-label">รอดำเนินการ</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <a href="{% querystring status='' %}" class="filter-tab {% if not request.GET.status %}active{% endif %}">ทั้งหมด</a>
+            {% for value, label in status_choices %}
+            <a href="{% querystring status=value %}" class="filter-tab {% if request.GET.status == value %}active{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="table-container">
+            {% if issues %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">สถานะ</th>
+                        <th>รายละเอียดปัญหา</th>
+                        <th>หมวดหมู่</th>
+                        <th>ผู้แจ้ง</th>
+                        <th style="width: 140px;">วันที่แจ้ง</th>
+                        <th style="width: 100px; text-align: center;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in issues %}
+                    <!-- 🌟 ใช้ tr ควบคู่กับ onclick เพื่อให้กดได้ทั้งแถว 🌟 -->
+                    <tr onclick="window.location.href='{% url 'issue_detail' issue.id %}'">
+                        <td>
+                            <span class="badge badge-{{ issue.status }}">
+                                <span class="badge-dot"></span>
+                                {{ issue.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="issue-desc">{{ issue.description }}</div>
+                            <div class="issue-loc">📍 {{ issue.location }} {% if issue.zone %}({{ issue.get_zone_display }}){% endif %}</div>
+                        </td>
+                        <td><span style="font-size: 0.75rem; background: var(--bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border);">{{ issue.get_category_display }}</span></td>
+                        <td style="font-weight: 500;">{{ issue.reporter.username }}</td>
+                        <td class="issue-date">{{ issue.created_at|date:"d M Y" }}<br>{{ issue.created_at|date:"H:i" }}</td>
+                        <td style="text-align: center;">
+                            <span class="btn-view">ดูข้อมูล</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                <p>ไม่พบรายการปัญหาในสถานะนี้</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ issue.description|truncatechars:40 }} - ProbleminUni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #F7F6F3;
+            --surface: #FFFFFF;
+            --surface-hover: #F0EEE9;
+            --border: #E8E5DF;
+            --text-primary: #1A1814;
+            --text-secondary: #6B6760;
+            --text-muted: #A8A49E;
+            --accent: #2B5CE6;
+            --accent-light: #EEF2FD;
+            --danger: #E63B2B;
+            --danger-light: #FEF0EE;
+            --success: #1C9E6B;
+            --success-light: #EAF7F2;
+            --warning: #D4870A;
+            --warning-light: #FEF5E7;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-pill: 999px;
+
+            /* status colors */
+            --c-pending:     #D4870A;
+            --c-in_progress: #2B5CE6;
+            --c-resolved:    #1C9E6B;
+            --c-rejected:    #E63B2B;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: rgba(247,246,243,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 200;
+            padding: 0 32px; height: 62px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .navbar-brand {
+            font-weight: 700; font-size: 1.15rem; color: var(--accent);
+            letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; text-decoration: none;
+        }
+        .navbar-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+        .user-chip {
+            display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-pill);
+            font-size: 0.82rem; color: var(--text-secondary); font-weight: 500;
+            box-shadow: var(--shadow-sm); text-decoration: none;
+        }
+        .user-avatar {
+            width: 26px; height: 26px; border-radius: 50%; background: var(--accent);
+            color: white; font-size: 0.65rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            height: 38px; padding: 0 16px; border-radius: var(--radius-pill);
+            border: none; cursor: pointer; font-size: 0.84rem;
+            font-family: inherit; font-weight: 600; transition: all 0.15s; text-decoration: none;
+        }
+        .btn-logout { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-secondary); font-size: 0.84rem; font-weight: 600;
+            text-decoration: none; transition: color 0.15s;
+        }
+        .btn-back:hover { color: var(--accent); }
+
+        /* ── MAIN ── */
+        .main { 
+            position: relative; 
+            z-index: 1;
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 44px 32px 80px; 
+        }
+
+        /* ── BREADCRUMB ── */
+        .breadcrumb {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.82rem; color: var(--text-muted);
+            margin-bottom: 28px;
+            animation: fadeUp 0.3s ease both;
+        }
+        .breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+        .breadcrumb a:hover { color: var(--accent); }
+        .breadcrumb-sep { color: var(--border); }
+
+        /* ── ISSUE HEADER CARD ── */
+        .issue-header-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 28px; 
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.35s 0.05s ease both;
+        }
+
+        .issue-header-card::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+        }
+        .issue-header-card.status-pending::before    { background: var(--c-pending); }
+        .issue-header-card.status-in_progress::before { background: var(--c-in_progress); }
+        .issue-header-card.status-resolved::before   { background: var(--c-resolved); }
+        .issue-header-card.status-rejected::before   { background: var(--c-rejected); }
+
+        .card-meta {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 10px; 
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; 
+            border-radius: var(--radius-pill);
+            font-size: 0.7rem; 
+            font-weight: 700;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        .badge-pending    { background: var(--warning-light); color: var(--c-pending); }
+        .badge-pending .badge-dot { background: var(--c-pending); }
+        .badge-in_progress { background: var(--accent-light); color: var(--c-in_progress); }
+        .badge-in_progress .badge-dot { background: var(--c-in_progress); animation: pulseDot 1.5s infinite; }
+        .badge-resolved   { background: var(--success-light); color: var(--c-resolved); }
+        .badge-resolved .badge-dot { background: var(--c-resolved); }
+        .badge-rejected   { background: var(--danger-light); color: var(--c-rejected); }
+        .badge-rejected .badge-dot { background: var(--c-rejected); }
+
+        @keyframes pulseDot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+
+        .issue-date { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+        .issue-title {
+            font-size: 1.2rem; 
+            font-weight: 700;
+            letter-spacing: -0.025em; line-height: 1.35;
+            margin-bottom: 12px; 
+        }
+
+        .issue-meta-row {
+            display: flex; flex-wrap: wrap; gap: 16px; 
+            padding-top: 12px; 
+            border-top: 1px solid var(--border);
+        }
+        .meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); }
+        .meta-item svg { flex-shrink: 0; color: var(--text-muted); }
+        .meta-item strong { color: var(--text-primary); font-weight: 600; }
+
+        /* rejection box */
+        .rejection-box {
+            background: var(--danger-light); border: 1px solid #fad4d0;
+            border-radius: var(--radius-sm); padding: 10px 14px; 
+            margin-top: 12px; 
+        }
+        .rejection-label { font-size: 0.7rem; font-weight: 700; color: var(--danger); margin-bottom: 4px; }
+        .rejection-text  { font-size: 0.8rem; color: #b02d20; }
+
+        /* issue image */
+        .issue-image {
+           margin-bottom: 16px;
+        }
+        .issue-image img { 
+            width: 100%; 
+            max-height: 350px; 
+            object-fit: contain; 
+            background: var(--bg); 
+            border-radius: 12px; 
+        }
+        .issue-image:hover { opacity: 0.9; }
+
+        /* 3D MODEL SECTION */
+        .model-section {
+            margin-top: 24px; 
+            padding-top: 24px; 
+            border-top: 1px solid var(--border);
+        }
+        .model-title {
+            font-size: 1.1rem; 
+            font-weight: 700; color: var(--text-primary);
+            margin-bottom: 6px; 
+            display: flex; align-items: center; gap: 8px;
+        }
+        .model-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; }
+        
+        .model-wrapper {
+            width: 100%; height: 350px; 
+            border-radius: 12px; overflow: hidden; 
+            border: 2px solid var(--border);
+            background: linear-gradient(145deg, #f0f4f8 0%, #e1e8f0 100%);
+            position: relative;
+        }
+
+        /* ปุ่มหมุดออโต้บนโมเดล 3D */
+        .auto-hotspot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: rgba(230, 59, 43, 0.9);
+            border: 2px solid white;
+            border-radius: 50%;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(230, 59, 43, 0.5);
+            pointer-events: none;
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform: translate(-50%, -50%) scale(0);
+        }
+
+        .auto-hotspot::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(230, 59, 43, 0.8);
+            animation: ripple 1.5s infinite ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        /* ── TIMELINE ── */
+        .timeline-section {
+            animation: fadeUp 0.35s 0.12s ease both;
+        }
+
+        .section-label {
+            font-size: 0.75rem; 
+            font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.07em;
+            margin-bottom: 16px; 
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 28px; 
+        }
+
+        /* vertical line */
+        .timeline::before {
+            content: '';
+            position: absolute; left: 9px; 
+            top: 12px;
+            width: 2px;
+            bottom: 12px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 0;
+            padding-bottom: 24px; 
+        }
+        .timeline-item:last-child { padding-bottom: 0; }
+
+        /* dot on the line */
+        .tl-dot {
+            position: absolute;
+            left: -28px; 
+            top: 8px;
+            width: 20px; height: 20px; 
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem;
+            border: 3px solid var(--bg);
+            box-shadow: 0 0 0 2px var(--border);
+            z-index: 1;
+            transition: all 0.2s;
+        }
+
+        .tl-dot.pending    { background: var(--c-pending);     box-shadow: 0 0 0 2px var(--c-pending); }
+        .tl-dot.in_progress { background: var(--c-in_progress); box-shadow: 0 0 0 2px var(--c-in_progress); }
+        .tl-dot.resolved   { background: var(--c-resolved);    box-shadow: 0 0 0 2px var(--c-resolved); }
+        .tl-dot.rejected   { background: var(--c-rejected);    box-shadow: 0 0 0 2px var(--c-rejected); }
+        .tl-dot.future     { background: var(--border);        box-shadow: 0 0 0 2px var(--border); }
+
+        .tl-dot svg { width: 10px; height: 10px; color: white; }
+
+        .tl-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; 
+            padding: 12px 16px; 
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+        }
+        .tl-card.active {
+            border-color: currentColor;
+            box-shadow: var(--shadow-md);
+        }
+        .tl-card.active.pending    { border-color: var(--c-pending);     background: var(--warning-light); }
+        .tl-card.active.in_progress { border-color: var(--c-in_progress); background: var(--accent-light); }
+        .tl-card.active.resolved   { border-color: var(--c-resolved);    background: var(--success-light); }
+        .tl-card.active.rejected   { border-color: var(--c-rejected);    background: var(--danger-light); }
+        .tl-card.future { opacity: 0.45; }
+
+        .tl-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+
+        .tl-status-name {
+            font-size: 0.85rem; 
+            font-weight: 700; letter-spacing: -0.01em;
+        }
+        .tl-status-name.pending    { color: var(--c-pending); }
+        .tl-status-name.in_progress { color: var(--c-in_progress); }
+        .tl-status-name.resolved   { color: var(--c-resolved); }
+        .tl-status-name.rejected   { color: var(--c-rejected); }
+        .tl-status-name.future     { color: var(--text-muted); }
+
+        .tl-datetime { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; font-weight: 500; }
+
+        .tl-by {
+            font-size: 0.75rem; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 5px; margin-top: 4px;
+        }
+        .tl-mini-avatar {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--accent); color: white;
+            font-size: 0.5rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .tl-note {
+            margin-top: 8px; padding: 6px 10px; 
+            background: rgba(0,0,0,0.04); border-radius: var(--radius-sm);
+            font-size: 0.75rem; color: var(--text-secondary);
+            border-left: 3px solid var(--border);
+        }
+        .tl-card.active.rejected .tl-note {
+            background: rgba(230,59,43,0.08); border-color: var(--c-rejected);
+            color: #b02d20;
+        }
+
+        .tl-future-label {
+            font-size: 0.75rem; color: var(--text-muted); font-style: italic;
+        }
+
+        /* ── STAFF CONTROLS ── */
+        .staff-controls {
+            margin-top: 32px;
+            padding: 24px;
+            background: var(--accent-light);
+            border: 1px solid rgba(43,92,230,0.2);
+            border-radius: 12px;
+            text-align: center;
+            animation: fadeUp 0.35s 0.2s ease both;
+        }
+        .staff-controls h3 {
+            font-size: 1.05rem;
+            color: var(--accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-update-status {
+            display: inline-flex; align-items: center; gap: 8px;
+            height: 42px; padding: 0 24px;
+            border-radius: var(--radius-pill); border: none;
+            background: var(--accent); color: white;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 4px 12px rgba(43,92,230,0.2);
+        }
+        .btn-update-status:hover {
+            background: #2250cc; transform: translateY(-2px);
+        }
+
+        /* ── STATUS UPDATE MODAL ── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(15,15,15,0.55);
+            backdrop-filter: blur(4px); z-index: 300; align-items: center; justify-content: center; padding: 24px;
+        }
+        .modal-overlay.open { display: flex; }
+        .status-modal {
+            background: var(--surface); border-radius: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+            width: 100%; max-width: 420px; padding: 32px; position: relative; animation: fadeUp 0.2s ease both;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px; width: 32px; height: 32px;
+            border-radius: 50%; border: none; background: var(--surface-hover); color: var(--text-secondary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 1.1rem;
+        }
+        .modal-close:hover { background: var(--border); color: var(--text-primary); }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .form-control {
+            width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 10px 14px; font-size: 0.9rem; font-family: inherit;
+            color: var(--text-primary); background: var(--bg); outline: none; transition: all 0.2s;
+        }
+        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,92,230,0.1); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+        .btn-cancel {
+            height: 40px; padding: 0 16px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+            background: transparent; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        }
+        .btn-cancel:hover { background: var(--surface-hover); }
+        .btn-save {
+            height: 40px; padding: 0 20px; border-radius: var(--radius-pill); border: none;
+            background: var(--accent); color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+        }
+        .btn-save:hover { background: #2250cc; }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        @media (max-width: 600px) {
+            .main { padding: 28px 16px 60px; }
+            .navbar { padding: 0 16px; }
+            .issue-header-card { padding: 20px 20px 20px 24px; }
+        }
+
+        /* ═══ BACKGROUND BUBBLES ═══ */
+        .bubbles-bg {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .bubbles-bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, #C4C0B8 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3;
+        }
+        .bubble {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            animation: bubbleFloat linear infinite;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), rgba(43,92,230,0.06));
+            border: 1px solid rgba(43,92,230,0.08);
+        }
+        @keyframes bubbleFloat {
+            0%   { transform: translateY(0) scale(1);   opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+        }
+
+    </style>
+    <!-- นำเข้า Google Model Viewer -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+</head>
+<body>
+    <div class="bubbles-bg"></div>
+    <div class="bubble" style="width:28px;height:28px;left:5%;bottom:-60px;animation-duration:18s;animation-delay:0s;"></div>
+    <div class="bubble" style="width:40px;height:40px;left:12%;bottom:-60px;animation-duration:22s;animation-delay:3s;"></div>
+    <div class="bubble" style="width:20px;height:20px;left:22%;bottom:-60px;animation-duration:16s;animation-delay:6s;"></div>
+    <div class="bubble" style="width:56px;height:56px;left:35%;bottom:-60px;animation-duration:25s;animation-delay:1.5s;"></div>
+    <div class="bubble" style="width:36px;height:36px;left:48%;bottom:-60px;animation-duration:20s;animation-delay:8s;"></div>
+    <div class="bubble" style="width:24px;height:24px;left:58%;bottom:-60px;animation-duration:17s;animation-delay:4.5s;"></div>
+    <div class="bubble" style="width:48px;height:48px;left:67%;bottom:-60px;animation-duration:23s;animation-delay:2s;"></div>
+    <div class="bubble" style="width:32px;height:32px;left:75%;bottom:-60px;animation-duration:19s;animation-delay:7s;"></div>
+    <div class="bubble" style="width:44px;height:44px;left:82%;bottom:-60px;animation-duration:21s;animation-delay:0.5s;"></div>
+    <div class="bubble" style="width:22px;height:22px;left:90%;bottom:-60px;animation-duration:15s;animation-delay:5.5s;"></div>
+    <div class="bubble" style="width:38px;height:38px;left:42%;bottom:-60px;animation-duration:24s;animation-delay:9s;"></div>
+    <div class="bubble" style="width:52px;height:52px;left:18%;bottom:-60px;animation-duration:26s;animation-delay:3.5s;"></div>
+
+    <header class="navbar">
+        <a href="{% url 'homepage' %}" class="navbar-brand">
+            <span class="navbar-brand-dot"></span>
+            ProbleminUni
+        </a>
+        <div class="navbar-right">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="user-chip">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>
+                    {{ user.username }}
+                </a>
+                
+                <button onclick="openLogoutConfirm()" class="btn btn-logout">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    ออกจากระบบ
+                </button>
+                <a id="logout-link" href="{% url 'logout' %}" style="display:none;"></a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn" style="background:var(--accent);color:white;">เข้าสู่ระบบ</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main">
+
+        <!-- BREADCRUMB -->
+        <div class="breadcrumb">
+            <!-- เช็คว่ามาจากหน้า Staff Dashboard หรือหน้าแรก -->
+            {% if user.is_staff %}
+            <a href="{% url 'staff_dashboard' %}">แดชบอร์ดเจ้าหน้าที่</a>
+            {% else %}
+            <a href="{% url 'homepage' %}">หน้าหลัก</a>
+            {% endif %}
+            <span class="breadcrumb-sep">›</span>
+            <span>{{ issue.description|truncatechars:40 }}</span>
+        </div>
+
+        <!-- ISSUE HEADER -->
+        <div class="issue-header-card status-{{ issue.status }}">
+            <div class="card-meta">
+                <span class="badge badge-{{ issue.status }}">
+                    <span class="badge-dot"></span>
+                    {{ issue.get_status_display }}
+                </span>
+                <span class="issue-date">รายงานเมื่อ {{ issue.created_at|date:"d M Y · H:i" }}</span>
+            </div>
+
+            <h1 class="issue-title">{{ issue.description }}</h1>
+
+            {% if issue.image %}
+            <div class="issue-image" style="cursor: pointer;" onclick="openImageModal('{{ issue.image.url }}')" title="คลิกเพื่อดูรูปขนาดเต็ม">
+                <img src="{{ issue.image.url }}" alt="รูปปัญหา">
+            </div>
+            {% endif %}
+
+            {% if issue.status == 'rejected' and issue.rejection_reason %}
+            <div class="rejection-box">
+                <p class="rejection-label">เหตุผลที่ปฏิเสธ</p>
+                <p class="rejection-text">{{ issue.rejection_reason }}</p>
+            </div>
+            {% endif %}
+
+            <div class="issue-meta-row">
+                <div class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <strong>{{ issue.location }}</strong>
+                </div>
+                <div class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    รายงานโดย <strong>{{ issue.reporter.username }}</strong>
+                </div>
+                {% if issue.category %}
+                <div class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    ประเภท: <strong>{{ issue.get_category_display }}</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 🌟 SECTION แสดง 3D MODEL (สำหรับ Staff เท่านั้น) 🌟 -->
+        {% if issue.zone and user.is_staff %}
+        <div class="model-section">
+            <h2 class="model-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                แผนผัง 3 มิติ (ระบบค้นหาจุดเกิดเหตุอัตโนมัติ)
+            </h2>
+            <p class="model-desc">โซนที่ระบุ: <b>{{ issue.get_zone_display }}</b> — หากระบบตรวจพบคำสำคัญในสถานที่ จะทำการปักหมุดและซูมกล้องให้โดยอัตโนมัติ</p>
+            
+            <div class="model-wrapper">
+                {% load static %}
+                <!-- นำข้อความสถานที่มาซ่อนไว้ให้ JS อ่าน -->
+                <input type="hidden" id="hidden-location" value="{{ issue.location|lower }}">
+
+                <model-viewer 
+                    id="auto-model"
+                    src="{% static 'models/' %}{{ issue.zone }}.glb" 
+                    camera-controls 
+                    shadow-intensity="1"
+                    style="width: 100%; height: 100%;">
+                    
+                    <!-- โหลดดิ้งสเตท -->
+                    <div slot="poster" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-weight: 600;">
+                        กำลังโหลดโมเดล 3 มิติ...
+                    </div>
+                </model-viewer>
+            </div>
+        </div>
+        {% endif %}
+        <!-- 🌟 สิ้นสุด SECTION 3D MODEL 🌟 -->
+
+        <!-- TIMELINE -->
+        <div class="timeline-section">
+            <div class="section-label">ความคืบหน้า</div>
+
+            <div class="timeline">
+
+                {% comment %}
+                  สร้าง ordered steps เพื่อ render timeline
+                  logs มาจาก issue.status_logs.all() เรียง changed_at ASC
+                {% endcomment %}
+
+                {% comment %}
+                  Step 1: pending — ใช้ issue.created_at เสมอ ไม่ต้องรอ log
+                {% endcomment %}
+                <div class="timeline-item">
+                    <div class="tl-dot pending">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="tl-card active pending">
+                        <div class="tl-header">
+                            <span class="tl-status-name pending">Pending (รับรายงานแล้ว)</span>
+                            <span class="tl-datetime">{{ issue.created_at|date:"d M Y · H:i" }}</span>
+                        </div>
+                        <div class="tl-by">
+                            <div class="tl-mini-avatar">{{ issue.reporter.username|first|upper }}</div>
+                            รายงานโดย {{ issue.reporter.username }}
+                        </div>
+                    </div>
+                </div>
+
+                {% comment %}
+                  Step 2+: แสดง log จริง (ข้าม pending) แล้วต่อด้วย future steps ตาม status
+                {% endcomment %}
+                {% for log in logs %}
+                    {% if log.status != 'pending' %}
+                    <div class="timeline-item">
+                        <div class="tl-dot {{ log.status }}">
+                            {% if log.status == 'in_progress' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                            {% elif log.status == 'resolved' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            {% elif log.status == 'rejected' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            {% endif %}
+                        </div>
+                        <div class="tl-card active {{ log.status }}">
+                            <div class="tl-header">
+                                <span class="tl-status-name {{ log.status }}">{{ log.get_status_display }}</span>
+                                <span class="tl-datetime">{{ log.changed_at|date:"d M Y · H:i" }}</span>
+                            </div>
+                            {% if log.changed_by %}
+                            <div class="tl-by">
+                                <div class="tl-mini-avatar">{{ log.changed_by.username|first|upper }}</div>
+                                ดำเนินการโดย {{ log.changed_by.username }}
+                            </div>
+                            {% endif %}
+                            {% if log.note %}
+                            <div class="tl-note">{{ log.note }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% comment %} Future steps — เสมอ 3 step ยกเว้น rejected {% endcomment %}
+                {% if issue.status == 'pending' %}
+                    <div class="timeline-item">
+                        <div class="tl-dot future">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        </div>
+                        <div class="tl-card future">
+                            <div class="tl-header"><span class="tl-status-name future">กำลังดำเนินการ</span></div>
+                            <div class="tl-future-label">รอดำเนินการ...</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="tl-dot future">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="tl-card future">
+                            <div class="tl-header"><span class="tl-status-name future">แก้ไขแล้ว</span></div>
+                            <div class="tl-future-label">รอดำเนินการ...</div>
+                        </div>
+                    </div>
+                {% elif issue.status == 'in_progress' %}
+                    <div class="timeline-item">
+                        <div class="tl-dot future">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="tl-card future">
+                            <div class="tl-header"><span class="tl-status-name future">แก้ไขแล้ว</span></div>
+                            <div class="tl-future-label">รอดำเนินการ...</div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% comment %} resolved และ rejected ไม่มี future steps {% endcomment %}
+
+            </div>
+        </div>
+
+        <!-- 🌟 STAFF CONTROLS (แสดงเฉพาะ Staff) 🌟 -->
+        {% if user.is_staff %}
+        <div class="staff-controls">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                ส่วนจัดการสำหรับเจ้าหน้าที่
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">อัปเดตสถานะการดำเนินงานเพื่อให้ผู้แจ้งทราบความคืบหน้า</p>
+            <button class="btn-update-status" onclick="openStatusModal()">
+                อัปเดตสถานะปัญหา
+            </button>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <!-- STATUS UPDATE MODAL (สำหรับ Staff) -->
+    {% if user.is_staff %}
+    <div id="statusModal" class="modal-overlay" onclick="if(event.target===this) closeStatusModal()">
+        <div class="status-modal">
+            <button class="modal-close" onclick="closeStatusModal()">✕</button>
+            <h2 style="font-size: 1.25rem; margin-bottom: 20px;">อัปเดตสถานะปัญหา</h2>
+            
+            <form action="{% url 'update_issue_status' issue.id %}" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">เลือกสถานะใหม่</label>
+                    <select name="status" class="form-control" required id="statusSelect" onchange="toggleRejectionReason()">
+                        <option value="in_progress" {% if issue.status == 'in_progress' %}selected{% endif %}>กำลังดำเนินการ</option>
+                        <option value="resolved" {% if issue.status == 'resolved' %}selected{% endif %}>แก้ไขแล้ว</option>
+                        <option value="rejected" {% if issue.status == 'rejected' %}selected{% endif %}>ปฏิเสธ / ยกเลิก</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="noteGroup">
+                    <label class="form-label">หมายเหตุการดำเนินงาน (แสดงใน Timeline)</label>
+                    <textarea name="note" class="form-control" rows="3" placeholder="เช่น อะไหล่กำลังมาส่ง..."></textarea>
+                </div>
+
+                <div class="form-group" id="rejectionGroup" style="display: none;">
+                    <label class="form-label" style="color: var(--danger);">เหตุผลที่ปฏิเสธ (จำเป็น)</label>
+                    <textarea name="rejection_reason" id="rejectionReason" class="form-control" rows="3" placeholder="ระบุเหตุผลที่ปฏิเสธการแก้ไข..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeStatusModal()">ยกเลิก</button>
+                    <button type="submit" class="btn-save">บันทึกสถานะ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- LOGOUT CONFIRM -->
+    <div id="confirmModal" class="confirm-overlay" onclick="if(event.target===this)closeConfirm()" style="display:none;position:fixed;inset:0;background:rgba(15,15,15,0.55);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;padding:24px;">
+        <div style="background:var(--surface);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,0.18);width:100%;max-width:380px;padding:32px 28px 24px;text-align:center;animation:fadeUp 0.2s ease both;">
+            <div style="width:52px;height:52px;border-radius:50%;background:var(--danger-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem;">👋</div>
+            <div style="font-size:1.05rem;font-weight:700;margin-bottom:8px;">ออกจากระบบ?</div>
+            <div style="font-size:0.84rem;color:var(--text-muted);line-height:1.6;margin-bottom:24px;">คุณต้องการออกจากระบบใช่ไหม? จะต้องเข้าสู่ระบบใหม่อีกครั้ง</div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeConfirm()" style="flex:1;height:42px;border-radius:var(--radius-pill);border:1px solid var(--border);background:var(--bg);color:var(--text-secondary);font-size:0.875rem;font-family:inherit;font-weight:600;cursor:pointer;">ยกเลิก</button>
+                <button onclick="document.getElementById('logout-link').click()" style="flex:1;height:42px;border-radius:var(--radius-pill);border:none;background:var(--danger);color:white;font-size:0.875rem;font-family:inherit;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(230,59,43,0.25);">ออกจากระบบ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMAGE MODAL -->
+    <div id="imageModal" class="confirm-overlay" onclick="if(event.target===this) closeImageModal()" style="display:none;position:fixed;inset:0;background:rgba(15,15,15,0.8);backdrop-filter:blur(4px);z-index:400;align-items:center;justify-content:center;padding:24px;">
+        <div style="position:relative; max-width:90vw; max-height:90vh; animation:fadeUp 0.2s ease both;">
+            <button onclick="closeImageModal()" style="position:absolute; top:-16px; right:-16px; width:32px; height:32px; border-radius:50%; background:var(--danger); color:white; border:none; cursor:pointer; font-size:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; z-index:401;">✕</button>
+            <img id="popup-image" src="" alt="ภาพปัญหาขนาดเต็ม" style="max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        </div>
+    </div>
+
+    <!-- ซ่อนข้อมูล JSON ไว้ใน Script Tag เพื่อป้องกัน Syntax Error ใน JavaScript -->
+    <script id="hotspots-data" type="application/json">
+        [
+            {% for spot in hotspots %}
+            {
+                "keyword": "{{ spot.keyword|lower|escapejs }}",
+                "position": "{{ spot.position|escapejs }}",
+                "normal": "{{ spot.normal|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    </script>
+
+    <script>
+        function openLogoutConfirm() {
+            const m = document.getElementById('confirmModal');
+            m.style.display = 'flex';
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // ฟังก์ชันสำหรับเปิด-ปิดป๊อปอัปรูปภาพ
+        function openImageModal(imageUrl) {
+            document.getElementById('popup-image').src = imageUrl;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+            setTimeout(() => { document.getElementById('popup-image').src = ''; }, 200);
+        }
+
+        // ฟังก์ชันสำหรับ Modal อัปเดตสถานะ
+        function openStatusModal() {
+            document.getElementById('statusModal').classList.add('open');
+            toggleRejectionReason(); // เช็คสถานะเริ่มต้นตอนเปิด
+        }
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.remove('open');
+        }
+        
+        // แสดงช่องกรอกเหตุผลปฏิเสธเฉพาะตอนเลือก "ปฏิเสธ"
+        function toggleRejectionReason() {
+            const select = document.getElementById('statusSelect');
+            const rejectionGroup = document.getElementById('rejectionGroup');
+            const noteGroup = document.getElementById('noteGroup');
+            const rejectionInput = document.getElementById('rejectionReason');
+
+            if (select.value === 'rejected') {
+                rejectionGroup.style.display = 'block';
+                noteGroup.style.display = 'none';
+                rejectionInput.required = true;
+            } else {
+                rejectionGroup.style.display = 'none';
+                noteGroup.style.display = 'block';
+                rejectionInput.required = false;
+            }
+        }
+
+        // 🌟 ระบบจัดการ 3D Hotspot อัตโนมัติ (ดึงจาก Database) 🌟
+        document.addEventListener("DOMContentLoaded", function() {
+            const viewer = document.getElementById('auto-model');
+            if(!viewer) return; 
+
+            const locationText = document.getElementById('hidden-location').value;
+            let locationDatabase = [];
+            
+            try {
+                const dataEl = document.getElementById('hotspots-data');
+                // เช็คเพื่อไม่ให้เกิด Error ในโหมด Preview หรือเมื่อ Django ยังไม่ได้เรนเดอร์
+                if (dataEl && !dataEl.textContent.includes('{%')) {
+                    const rawText = dataEl.textContent.trim();
+                    if (rawText) {
+                        locationDatabase = JSON.parse(rawText);
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing hotspots data:", e);
+            }
+
+            // เมื่อโมเดลโหลดเสร็จ ให้ทำงาน
+            viewer.addEventListener('load', () => {
+                if(locationDatabase.length > 0) {
+                    
+                    // วนลูปหาว่าข้อความสถานที่ที่ User พิมพ์มา ตรงกับ Keyword ของเราไหม
+                    for(let i = 0; i < locationDatabase.length; i++) {
+                        const spot = locationDatabase[i];
+                        
+                        // ถ้าระบุสถานที่ตรงกับ keyword ในระบบ (เช่น พิมพ์ "หน้าห้องน้ำชายชำรุด" ก็จะตรงกับ "ห้องน้ำชาย")
+                        if(locationText.includes(spot.keyword)) {
+                            
+                            // 1. สร้างหมุด (Hotspot)
+                            const hotspot = document.createElement('div');
+                            hotspot.classList.add('auto-hotspot');
+                            hotspot.slot = 'hotspot-auto';
+                            hotspot.dataset.position = spot.position;
+                            hotspot.dataset.normal = spot.normal;
+                            hotspot.innerHTML = '📍';
+                            viewer.appendChild(hotspot);
+
+                            // 2. หมุนและซูมกล้องไปที่หมุดอัตโนมัติ
+                            setTimeout(() => {
+                                viewer.cameraTarget = spot.position;
+                                viewer.cameraOrbit = "45deg 55deg 15m"; 
+                            }, 500);
+
+                            break; // เจอหมุดแล้วหยุดลูปได้เลย
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

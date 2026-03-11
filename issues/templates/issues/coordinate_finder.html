@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Coordinate Finder (Dev Tool)</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: #1e1e24; /* พื้นหลังสีเข้มสไตล์ Dev Tool */
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #15151a;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            font-size: 1.2rem;
+            color: #64b5f6;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-back {
+            color: #aaa; text-decoration: none; font-size: 0.9rem; font-weight: 600;
+            padding: 6px 12px; border-radius: 6px; border: 1px solid #444; transition: all 0.2s;
+        }
+        .btn-back:hover { background: #333; color: white; }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 24px;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .viewer-box {
+            flex: 1;
+            background: #25252b;
+            border-radius: 12px;
+            border: 1px solid #333;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .control-panel {
+            width: 350px;
+            background: #25252b;
+            border-radius: 12px;
+            border: 1px solid #333;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label { font-size: 0.85rem; font-weight: 600; color: #aaa; margin-bottom: 6px; display: block; }
+        
+        select {
+            width: 100%; padding: 10px 12px; border-radius: 6px;
+            background: #15151a; border: 1px solid #444; color: white;
+            font-family: inherit; font-size: 0.9rem; outline: none;
+        }
+        select:focus { border-color: #64b5f6; }
+
+        .result-box {
+            background: #15151a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .code-snippet {
+            background: #000;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #a5d6ff;
+            word-wrap: break-word;
+            margin-bottom: 12px;
+            border: 1px solid #333;
+        }
+
+        .btn-copy {
+            width: 100%; padding: 10px; border-radius: 6px; border: none;
+            background: #64b5f6; color: #000; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .btn-copy:hover { background: #42a5f5; }
+        .btn-copy.copied { background: #66bb6a; color: white; }
+
+        /* จุดพิกัดเป้าเล็งจำลองตอนคลิก */
+        .hotspot-pin {
+            background: rgba(255, 60, 60, 0.9);
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+    </style>
+    <!-- โหลด Model Viewer -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+</head>
+<body>
+
+    <div class="header">
+        <h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> Coordinate Finder (เครื่องมือหาพิกัด)</h1>
+        <a href="{% url 'staff_dashboard' %}" class="btn-back">กลับไปหน้า Dashboard</a>
+    </div>
+
+    <div class="main-container">
+        
+        <!-- กล่อง 3D Model -->
+        <div class="viewer-box">
+            {% load static %}
+            <model-viewer 
+                id="dev-model"
+                src="" 
+                camera-controls 
+                shadow-intensity="1"
+                disable-tap
+                style="width: 100%; height: 100%; background-color: #2a2a30;">
+                
+                <div id="loading-text" slot="poster" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color: #888; font-weight: 600;">
+                    กรุณาเลือกโมเดลจากเมนูด้านขวา...
+                </div>
+            </model-viewer>
+        </div>
+
+        <!-- แผงควบคุม (Control Panel) -->
+        <div class="control-panel">
+            <div>
+                <label>1. เลือกไฟล์โมเดลที่ต้องการหาพิกัด</label>
+                <select id="modelSelect" onchange="loadModel(this.value)">
+                    <option value="" disabled selected>-- เลือกไฟล์ .glb --</option>
+                    <option value="archif1">คณะสถาปัตยกรรม ชั้น 1 (archif1.glb)</option>
+                    <option value="archif2">คณะสถาปัตยกรรม ชั้น 2 (archif2.glb)</option>
+                    <option value="archif3">คณะสถาปัตยกรรม ชั้น 3 (archif3.glb)</option>
+                    <option value="archif4">คณะสถาปัตยกรรม ชั้น 4 (archif4.glb)</option>
+                    <option value="archif5">คณะสถาปัตยกรรม ชั้น 5 (archif5.glb)</option>
+                    <option value="archif6">คณะสถาปัตยกรรม ชั้น 6 (archif6.glb)</option>
+                    <option value="outdoor81">ลานหน้าตึก 81 (outdoor81.glb)</option>
+                </select>
+            </div>
+
+            <div style="padding-top: 10px; border-top: 1px solid #444;">
+                <label>2. วิธีใช้งาน</label>
+                <ul style="font-size: 0.8rem; color: #aaa; padding-left: 20px; line-height: 1.6;">
+                    <li>หมุนและซูมโมเดลไปยังจุดที่ต้องการ (เช่น ห้องน้ำ)</li>
+                    <li><strong>กดคลิกซ้าย 1 ครั้ง</strong> ตรงพื้นผิวที่ต้องการปักหมุด</li>
+                    <li>ระบบจะสร้างพิกัด X Y Z และคายโค้ดออกมาด้านล่าง</li>
+                </ul>
+            </div>
+
+            <div class="result-box">
+                <label style="color: #64b5f6;">3. โค้ดสำหรับนำไปใช้งาน</label>
+                
+                <!-- กล่องแสดงโค้ด -->
+                <div id="output-code" class="code-snippet">
+// พิกัดจะปรากฏที่นี่...
+                </div>
+
+                <button id="copy-btn" class="btn-copy" onclick="copyCode()" disabled style="opacity: 0.5;">คลิกเพื่อ Copy โค้ด</button>
+            </div>
+            
+            <p style="font-size: 0.75rem; color: #666; text-align: center; margin-top: auto;">
+                (นำข้อมูลพิกัดเหล่านี้ไปเก็บเป็น Dictionary ใน JavaScript ของหน้า Issue Detail)
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        const staticUrl = "{% static 'models/' %}";
+        const viewer = document.getElementById('dev-model');
+        const outputCode = document.getElementById('output-code');
+        const copyBtn = document.getElementById('copy-btn');
+        let currentCode = '';
+
+        function loadModel(filename) {
+            if(filename) {
+                viewer.src = staticUrl + filename + '.glb';
+                document.getElementById('loading-text').style.display = 'none';
+                clearPin();
+                outputCode.innerText = '// คลิกบนโมเดลเพื่อสร้างพิกัด...';
+                copyBtn.disabled = true;
+                copyBtn.style.opacity = '0.5';
+            }
+        }
+
+        // ดักจับการคลิกแบบแม่นยำ (ป้องกันลากเมาส์)
+        let isDragging = false;
+        viewer.addEventListener('mousedown', () => isDragging = false);
+        viewer.addEventListener('mousemove', () => isDragging = true);
+        viewer.addEventListener('mouseup', (event) => {
+            if (isDragging) return;
+
+            const rect = viewer.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const hit = viewer.positionAndNormalFromPoint(x, y);
+
+            if (hit != null) {
+                clearPin(); // ลบอันเก่า
+
+                // สร้างหมุดใหม่
+                const hotspot = document.createElement('div');
+                hotspot.classList.add('hotspot-pin');
+                hotspot.slot = 'hotspot-dev';
+                
+                // ตัดทศนิยมให้เหลือ 4 ตำแหน่งเพื่อไม่ให้ยาวเกินไป
+                const posX = hit.position.x.toFixed(4);
+                const posY = hit.position.y.toFixed(4);
+                const posZ = hit.position.z.toFixed(4);
+                
+                const normX = hit.normal.x.toFixed(4);
+                const normY = hit.normal.y.toFixed(4);
+                const normZ = hit.normal.z.toFixed(4);
+
+                const posString = `${posX} ${posY} ${posZ}`;
+                const normString = `${normX} ${normY} ${normZ}`;
+
+                hotspot.dataset.position = posString;
+                hotspot.dataset.normal = normString;
+                
+                viewer.appendChild(hotspot);
+
+                // สร้างข้อความโค้ดสำหรับนำไปใช้
+                currentCode = `{ position: "${posString}", normal: "${normString}" }`;
+                
+                outputCode.innerText = currentCode;
+                copyBtn.disabled = false;
+                copyBtn.style.opacity = '1';
+                copyBtn.innerText = 'คัดลอกโค้ด';
+                copyBtn.classList.remove('copied');
+            }
+        });
+
+        function clearPin() {
+            const existingPin = viewer.querySelector('.hotspot-pin');
+            if (existingPin) existingPin.remove();
+        }
+
+        function copyCode() {
+            if(!currentCode) return;
+            // สร้าง textarea ชั่วคราวเพื่อใช้คำสั่ง copy (รองรับหลายเบราว์เซอร์)
+            const el = document.createElement('textarea');
+            el.value = currentCode;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            copyBtn.innerText = '✓ คัดลอกสำเร็จแล้ว!';
+            copyBtn.classList.add('copied');
+            
+            setTimeout(() => {
+                copyBtn.innerText = 'คัดลอกโค้ดอีกครั้ง';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
