@@ -225,6 +225,20 @@
         }
         .btn-submit-login:hover { background: #2d2a25; transform: translateY(-1px); }
 
+        .alert-error {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: #FEF0EE; border: 1px solid #fad4d0;
+            border-left: 4px solid var(--danger);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            font-size: 0.84rem; color: #b02d20; font-weight: 500;
+            animation: fadeUp 0.3s ease both;
+        }
+        .alert-error-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+        .alert-error-text { line-height: 1.5; }
+        .alert-error-text strong { display: block; font-weight: 700; margin-bottom: 2px; }
+
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         /* NOTIFICATIONS SECTION */
         .notif-section { margin-bottom: 40px; animation: fadeUp 0.4s 0.04s ease both; }
@@ -396,6 +410,22 @@
                 </div>
                 <div class="auth-right">
                     <h2>เข้าสู่ระบบ</h2>
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert-error">
+                            <span class="alert-error-icon">⚠️</span>
+                            <div class="alert-error-text">
+                                <strong>เข้าสู่ระบบไม่สำเร็จ</strong>
+                                {{ message }}
+                                {% if 'ไม่ถูกต้อง' in message.tags or 'error' in message.tags %}
+                                <span style="display:block;margin-top:6px;font-size:0.8rem;color:#b02d20;">
+                                    ยังไม่มีบัญชี? <a href="{% url 'register' %}" style="color:var(--accent);font-weight:700;text-decoration:underline;">สมัครสมาชิกที่นี่</a>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
                     <form action="{% url 'login' %}" method="POST">
                         {% csrf_token %}
                         <div class="form-group">
