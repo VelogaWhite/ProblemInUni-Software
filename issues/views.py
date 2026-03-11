@@ -30,6 +30,7 @@ def homepage(request):
     return render(request, 'issues/homepage.html', {
         'issues': issues,
         'status_choices': Issue.STATUS_CHOICES,
+        'category_choices': Issue.CATEGORY_CHOICES, # <--- เพิ่มบรรทัดนี้เข้ามาครับ
         'notif_count': notif_count,
     })
 
@@ -62,14 +63,17 @@ def issue_detail(request, issue_id):
 @login_required(login_url='login')
 def report_issue(request):
     if request.method == 'POST':
+        # ตอนบันทึกปัญหา อย่าลืมรับค่า category มาจากฟอร์มด้วยนะครับ (เห็นว่าในโค้ดเดิมยังไม่ได้มีการรับค่านี้ไปเซฟ)
         description = request.POST.get('description')
         location = request.POST.get('location')
+        category = request.POST.get('category') # รับค่า category เพิ่มเติม (แนะนำให้เพิ่มบรรทัดนี้และเอาไปใส่ใน Issue.objects.create ด้วยถ้าต้องการเซฟลงฐานข้อมูลครับ)
         image = request.FILES.get('image')
         
         if description and location:
             issue = Issue.objects.create(
                 description=description,
                 location=location,
+                category=category, # บันทึก category ลงโมเดลด้วย
                 image=image,
                 reporter=request.user,
                 status='pending'
@@ -104,8 +108,13 @@ def login_view(request):
 
 # ระบบออกจากระบบ
 def logout_view(request):
+<<<<<<< Updated upstream
     logout(request)
     return redirect('login') # ออกจากระบบแล้วเด้งไปหน้าเข้าสู่ระบบ
+=======
+    logout(request)  # logout ทันทีไม่ว่าจะ GET หรือ POST
+    return redirect('profile')
+>>>>>>> Stashed changes
 
 # ระบบสมัครสมาชิก
 def register_view(request):

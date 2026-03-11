@@ -9,6 +9,17 @@ class Issue(models.Model):
         ('rejected', 'Rejected (ปฏิเสธ/ยกเลิก)'),
     ]
 
+    CATEGORY_CHOICES = [
+        ('electrical',   '⚡ Electrical'),
+        ('plumbing',     '🔧 Plumbing / Water'),
+        ('internet',     '🌐 Internet / Network'),
+        ('ac',           '❄️ Air Conditioning'),
+        ('furniture',    '🪑 Furniture / Equipment'),
+        ('security',     '🔒 Security'),
+        ('cleanliness',  '🧹 Cleanliness'),
+        ('other',        '📌 Other'),
+    ]
+
     # ผู้ที่รายงานปัญหา (สมชาย)
     reporter = models.ForeignKey(User, on_delete=models.CASCADE) 
     
@@ -25,6 +36,8 @@ class Issue(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending') 
     
     rejection_reason = models.TextField(blank=True, null=True)
+
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
 
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -51,7 +51,7 @@
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
-            position: sticky; top: 0; z-index: 100;
+            position: sticky; top: 0; z-index: 200;
             padding: 0 32px; height: 62px;
             display: flex; align-items: center; justify-content: space-between;
         }
@@ -88,6 +88,7 @@
         .btn-back:hover { color: var(--accent); }
 
         /* ── MAIN ── */
+        .main { position: relative; z-index: 1;
         .main { max-width: 860px; margin: 0 auto; padding: 44px 32px 80px; }
 
         /* ── BREADCRUMB ── */
@@ -171,14 +172,14 @@
         .rejection-text  { font-size: 0.875rem; color: #b02d20; }
 
         /* issue image */
-        .issue-image {
-            width: 100%; max-height: 320px; overflow: hidden;
-            border-radius: var(--radius-sm); margin-top: 16px;
-            background: var(--bg);
-            transition: opacity 0.2s;
+        .issue-image img { 
+            width: 100%; 
+            max-height: 450px; 
+            object-fit: contain; 
+            background: var(--bg); 
         }
         .issue-image:hover { opacity: 0.9; }
-        .issue-image img { width: 100%; height: 100%; object-fit: cover; }
+        .issue-image img { width: 100%; height: 100%; object-fit: contain; background: var(--bg); }
 
         /* ── TIMELINE ── */
         .timeline-section {
@@ -296,13 +297,52 @@
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
         @media (max-width: 600px) {
-            .main { padding: 28px 16px 60px; }
+            .main { position: relative; z-index: 1;
+        .main { padding: 28px 16px 60px; }
             .navbar { padding: 0 16px; }
             .issue-header-card { padding: 20px 20px 20px 24px; }
         }
+
+        /* ═══ BACKGROUND BUBBLES ═══ */
+        .bubbles-bg {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .bubbles-bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, #C4C0B8 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3;
+        }
+        .bubble {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            animation: bubbleFloat linear infinite;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), rgba(43,92,230,0.06));
+            border: 1px solid rgba(43,92,230,0.08);
+        }
+        @keyframes bubbleFloat {
+            0%   { transform: translateY(0) scale(1);   opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+        }
+
     </style>
 </head>
 <body>
+    <div class="bubbles-bg"></div>
+    <div class="bubble" style="width:28px;height:28px;left:5%;bottom:-60px;animation-duration:18s;animation-delay:0s;"></div>
+    <div class="bubble" style="width:40px;height:40px;left:12%;bottom:-60px;animation-duration:22s;animation-delay:3s;"></div>
+    <div class="bubble" style="width:20px;height:20px;left:22%;bottom:-60px;animation-duration:16s;animation-delay:6s;"></div>
+    <div class="bubble" style="width:56px;height:56px;left:35%;bottom:-60px;animation-duration:25s;animation-delay:1.5s;"></div>
+    <div class="bubble" style="width:36px;height:36px;left:48%;bottom:-60px;animation-duration:20s;animation-delay:8s;"></div>
+    <div class="bubble" style="width:24px;height:24px;left:58%;bottom:-60px;animation-duration:17s;animation-delay:4.5s;"></div>
+    <div class="bubble" style="width:48px;height:48px;left:67%;bottom:-60px;animation-duration:23s;animation-delay:2s;"></div>
+    <div class="bubble" style="width:32px;height:32px;left:75%;bottom:-60px;animation-duration:19s;animation-delay:7s;"></div>
+    <div class="bubble" style="width:44px;height:44px;left:82%;bottom:-60px;animation-duration:21s;animation-delay:0.5s;"></div>
+    <div class="bubble" style="width:22px;height:22px;left:90%;bottom:-60px;animation-duration:15s;animation-delay:5.5s;"></div>
+    <div class="bubble" style="width:38px;height:38px;left:42%;bottom:-60px;animation-duration:24s;animation-delay:9s;"></div>
+    <div class="bubble" style="width:52px;height:52px;left:18%;bottom:-60px;animation-duration:26s;animation-delay:3.5s;"></div>
 
     <header class="navbar">
         <a href="{% url 'homepage' %}" class="navbar-brand">
@@ -370,6 +410,12 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     รายงานโดย <strong>{{ issue.reporter.username }}</strong>
                 </div>
+                {% if issue.category %}
+                <div class="meta-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    ประเภท: <strong>{{ issue.get_category_display }}</strong>
+                </div>
+                {% endif %}
             </div>
         </div>
 

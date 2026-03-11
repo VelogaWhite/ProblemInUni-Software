@@ -83,9 +83,37 @@
         /* MAIN */
         .main { max-width: 1200px; margin: 0 auto; padding: 40px 32px 80px; }
 
-        .page-header { margin-bottom: 28px; animation: fadeUp 0.4s ease both; }
-        .page-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 4px; }
-        .page-header p { font-size: 0.875rem; color: var(--text-muted); }
+        .page-header {
+            margin-bottom: 28px;
+            padding: 32px 40px;
+            background: linear-gradient(130deg, #1a1814 0%, #2d2925 100%);
+            border-radius: 20px;
+            position: relative; overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+            display: flex; align-items: center; justify-content: space-between; gap: 24px;
+        }
+        .page-header::after {
+            content: '';
+            position: absolute; top: -50px; right: -50px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(255,255,255,0.04); pointer-events: none;
+        }
+        .page-header-text h1 { color: white; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 4px; position: relative; }
+        .page-header-text p  { font-size: 0.875rem; color: rgba(255,255,255,0.5); position: relative; }
+        .page-header-chips { display: flex; gap: 10px; flex-wrap: wrap; position: relative; }
+        .header-chip {
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px; padding: 10px 20px; min-width: 80px;
+        }
+        .header-chip-num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+        .header-chip-label { font-size: 0.68rem; color: rgba(255,255,255,0.5); margin-top: 3px; font-weight: 500; }
+        .chip-total { color: white; }
+        .chip-pending { color: var(--warning); }
+        .chip-progress { color: var(--accent-light); }
+        .chip-resolved { color: #4ade80; }
+        .chip-rejected { color: #f87171; }
 
         /* STATS */
         .stats-row {
@@ -98,22 +126,35 @@
             text-decoration: none;
             cursor: pointer;
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 16px 20px;
-            box-shadow: var(--shadow-sm);
+            border-radius: 16px; padding: 18px 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.18s cubic-bezier(.25,.8,.25,1);
+            position: relative; overflow: hidden;
         }
-        .stat-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-        .stat-value { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+        .stat-card::before {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 3px; border-radius: 0 0 16px 16px;
+            background: var(--border); transition: all 0.18s;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); border-color: #D0CCC5; }
+        .stat-card.stat-active { border-color: currentColor; }
+        .stat-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+        .stat-value { font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
         .stat-value.blue   { color: var(--accent); }
         .stat-value.green  { color: var(--success); }
         .stat-value.red    { color: var(--danger); }
         .stat-value.orange { color: var(--warning); }
+        .stat-card:has(.blue)::before   { background: var(--accent); }
+        .stat-card:has(.orange)::before { background: var(--warning); }
+        .stat-card:has(.green)::before  { background: var(--success); }
+        .stat-card:has(.red)::before    { background: var(--danger); }
 
         /* TABLE */
         .table-wrap {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
             overflow: hidden;
             animation: fadeUp 0.4s 0.1s ease both;
         }
@@ -127,7 +168,7 @@
 
         table { width: 100%; border-collapse: collapse; }
 
-        thead tr { background: var(--bg); }
+        thead tr { background: #F0EDE7; }
         thead th {
             padding: 11px 18px;
             font-size: 0.72rem; font-weight: 700;
@@ -141,7 +182,7 @@
             transition: background 0.12s;
         }
         tbody tr:last-child { border-bottom: none; }
-        tbody tr:hover { background: var(--surface-hover); }
+        tbody tr:hover { background: #F7F5F1; }
 
         td {
             padding: 13px 18px;
@@ -197,14 +238,15 @@
         .status-select:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 2px rgba(43,92,230,0.1); }
 
         .btn-save {
-            height: 34px; padding: 0 14px;
-            border-radius: var(--radius-sm); border: none;
+            height: 34px; padding: 0 16px;
+            border-radius: var(--radius-pill); border: none;
             background: var(--accent); color: white;
             font-size: 0.78rem; font-family: inherit; font-weight: 700;
             cursor: pointer; transition: all 0.15s;
             white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(43,92,230,0.3);
         }
-        .btn-save:hover { background: #2250cc; }
+        .btn-save:hover { background: #2250cc; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(43,92,230,0.35); }
 
         .rejection-input {
             width: 100%;
@@ -261,9 +303,47 @@
         .confirm-btn.danger:hover { background: #c42d1e; transform: translateY(-1px); }
         .confirm-btn.primary { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(43,92,230,0.25); }
         .confirm-btn.primary:hover { background: #2250cc; transform: translateY(-1px); }
+
+        /* ═══ BACKGROUND BUBBLES ═══ */
+        .bubbles-bg {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .bubbles-bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, #C4C0B8 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3;
+        }
+        .bubble {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            animation: bubbleFloat linear infinite;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), rgba(43,92,230,0.06));
+            border: 1px solid rgba(43,92,230,0.08);
+        }
+        @keyframes bubbleFloat {
+            0%   { transform: translateY(0) scale(1);   opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-110vh) scale(1.1); opacity: 0; }
+        }
+
     </style>
 </head>
 <body>
+    <div class="bubbles-bg"></div>
+    <div class="bubble" style="width:28px;height:28px;left:5%;bottom:-60px;animation-duration:18s;animation-delay:0s;"></div>
+    <div class="bubble" style="width:40px;height:40px;left:12%;bottom:-60px;animation-duration:22s;animation-delay:3s;"></div>
+    <div class="bubble" style="width:20px;height:20px;left:22%;bottom:-60px;animation-duration:16s;animation-delay:6s;"></div>
+    <div class="bubble" style="width:56px;height:56px;left:35%;bottom:-60px;animation-duration:25s;animation-delay:1.5s;"></div>
+    <div class="bubble" style="width:36px;height:36px;left:48%;bottom:-60px;animation-duration:20s;animation-delay:8s;"></div>
+    <div class="bubble" style="width:24px;height:24px;left:58%;bottom:-60px;animation-duration:17s;animation-delay:4.5s;"></div>
+    <div class="bubble" style="width:48px;height:48px;left:67%;bottom:-60px;animation-duration:23s;animation-delay:2s;"></div>
+    <div class="bubble" style="width:32px;height:32px;left:75%;bottom:-60px;animation-duration:19s;animation-delay:7s;"></div>
+    <div class="bubble" style="width:44px;height:44px;left:82%;bottom:-60px;animation-duration:21s;animation-delay:0.5s;"></div>
+    <div class="bubble" style="width:22px;height:22px;left:90%;bottom:-60px;animation-duration:15s;animation-delay:5.5s;"></div>
+    <div class="bubble" style="width:38px;height:38px;left:42%;bottom:-60px;animation-duration:24s;animation-delay:9s;"></div>
+    <div class="bubble" style="width:52px;height:52px;left:18%;bottom:-60px;animation-duration:26s;animation-delay:3.5s;"></div>
 
     <header class="navbar">
         <a href="{% url 'staff_dashboard' %}" class="navbar-brand">
@@ -277,15 +357,39 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 ออกจากระบบ
             </button>
-            <a id="logout-link" href="{% url 'logout' %}" style="display:none;"></a>
+            <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display:none;">{% csrf_token %}</form>
         </div>
     </header>
 
     <main class="main">
 
         <div class="page-header">
-            <h1>รายการปัญหาทั้งหมด</h1>
-            <p>จัดการและอัปเดตสถานะปัญหาที่รายงานเข้ามา</p>
+            <div class="page-header-text">
+                <h1>รายการปัญหาทั้งหมด</h1>
+                <p>จัดการและอัปเดตสถานะปัญหาที่รายงานเข้ามา</p>
+            </div>
+            <div class="page-header-chips">
+                <div class="header-chip">
+                    <span class="header-chip-num chip-total">{{ count_total }}</span>
+                    <span class="header-chip-label">ทั้งหมด</span>
+                </div>
+                <div class="header-chip">
+                    <span class="header-chip-num chip-pending">{{ count_pending }}</span>
+                    <span class="header-chip-label">รอดำเนินการ</span>
+                </div>
+                <div class="header-chip">
+                    <span class="header-chip-num chip-progress">{{ count_in_progress }}</span>
+                    <span class="header-chip-label">กำลังดำเนิน</span>
+                </div>
+                <div class="header-chip">
+                    <span class="header-chip-num chip-resolved">{{ count_resolved }}</span>
+                    <span class="header-chip-label">แก้ไขแล้ว</span>
+                </div>
+                <div class="header-chip">
+                    <span class="header-chip-num chip-rejected">{{ count_rejected }}</span>
+                    <span class="header-chip-label">ถูกปฏิเสธ</span>
+                </div>
+            </div>
         </div>
 
         <!-- STATS -->
@@ -458,7 +562,7 @@
             const form = _pendingForm;
             closeConfirm();
             if (type === 'logout') {
-                document.getElementById('logout-link').click();
+                document.getElementById('logout-form').submit();
             } else if (type === 'save' && form) {
                 form.submit();
             }
